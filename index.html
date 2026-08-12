@@ -111,7 +111,7 @@
             <div class="kpi-num" id="kpi-blocos-concretados" style="color:var(--secondary);">0</div>
         </div>
         <div class="kpi-card">
-            <small>VOLUME TOTAL ESTACAS ($m^3$)</small>
+            <small>VOLUME TOTAL ESTACAS (m³)</small>
             <div class="kpi-num" id="kpi-volume-estacas" style="color:#0284c7;">0.00</div>
         </div>
     </div>
@@ -126,7 +126,7 @@
                 </button>
             </div>
             <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">
-                Clique na estaca para alternar entre realizada/pendente. Preencha o volume individual ($m^3$) se desejado. Ao concluir todas as estacas de um bloco, ele será <strong>liberado automaticamente</strong>.
+                Clique na estaca para alternar entre realizada/pendente. Preencha o volume individual (m³) se desejado. Ao concluir todas as estacas de um bloco, ele será <strong>liberado automaticamente</strong>.
             </p>
         </div>
 
@@ -161,7 +161,7 @@
                             <th>Bloco</th>
                             <th>Qtd Estacas</th>
                             <th>Status</th>
-                            <th>Vol. Bloco ($m^3$)</th>
+                            <th>Vol. Bloco (m³)</th>
                             <th>Data Concretagem</th>
                             <th>Nº Nota Fiscal (NF)</th>
                             <th>Ações</th>
@@ -205,19 +205,17 @@
                     <input type="number" id="new-block-piles-count" min="1" value="2">
                 </div>
                 <div>
-                    <label>Vol. por Estaca ($m^3$):</label>
+                    <label>Vol. por Estaca (m³):</label>
                     <input type="number" step="0.01" id="new-pile-vol" value="0.80">
                 </div>
                 <div>
-                    <label>Vol. do Bloco ($m^3$):</label>
+                    <label>Vol. do Bloco (m³):</label>
                     <input type="number" step="0.01" id="new-block-vol" value="3.50">
                 </div>
             </div>
             <button class="btn-main" style="margin-top:12px;" onclick="adicionarNovoBloco()">➕ Cadastrar Bloco</button>
             <button class="btn-main" style="background:#64748b; margin-top:6px;" onclick="carregarDadosDemonstracao()">⚡ Carregar Dados de Exemplo (Seed Inicial)</button>
-            <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">
-    ⚡ Importar 217 Estacas da Planilha de Rastreio
-</button>
+            <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">⚡ Importar Rastreio de Estacas</button>
         </div>
     </div>
 
@@ -248,7 +246,7 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE CONFIGURADA
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBqtptEp5QjIOoAjwx0wT--cswUhSvcsGM",
             authDomain: "vistoria-obra.firebaseapp.com",
@@ -333,7 +331,7 @@
                 state.blocks.push({
                     id: name,
                     name: name,
-                    status: 'pendente', // 'pendente', 'liberado', 'concretado'
+                    status: 'pendente',
                     volumeBloco: (numPiles * 1.5).toFixed(2),
                     piles: piles,
                     concreteDate: null,
@@ -344,7 +342,6 @@
             salvarEstado();
         }
 
-        // LÓGICA PRINCIPAL: TODAS AS ESTACAS FEITAS = BLOCO LIBERADO
         function verificarLiberacaoBlocos() {
             state.blocks.forEach(block => {
                 const todasEstacasFeitas = block.piles.length > 0 && block.piles.every(p => p.status === 'concluida');
@@ -572,7 +569,6 @@
             }
         }
 
-        // GERADORES DE RELATÓRIO PARA WHATSAPP
         function gerarRelatorioWhatsappEstacas() {
             let totalEstacas = 0;
             let executadas = 0;
@@ -598,7 +594,7 @@
             txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
             txt += `🏗️ *Progresso de Estacas:*\n`;
             txt += `• Concluídas Hoje: ${executadasHoje}\n`;
-            txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${((executadas/totalEstacas)*100).toFixed(1)}%)\n\n`;
+            txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${((executadas/(totalEstacas||1))*100).toFixed(1)}%)\n\n`;
             txt += `🧱 *Blocos Liberados para Concretagem (${blocosLiberados.length}):*\n`;
             txt += `• ${blocosLiberados.length > 0 ? blocosLiberados.join(', ') : 'Nenhum bloco liberado até o momento.'}\n`;
 
@@ -627,7 +623,6 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        // CRONOGRAMA & CALENDÁRIO
         function renderCalendar() {
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) return;
@@ -637,13 +632,11 @@
             let blockEventsByDate = {};
 
             state.blocks.forEach(b => {
-                // Blocos concretados
                 if (b.status === 'concretado' && b.concreteDate) {
                     if (!blockEventsByDate[b.concreteDate]) blockEventsByDate[b.concreteDate] = [];
                     blockEventsByDate[b.concreteDate].push(b);
                 }
 
-                // Estacas concluídas
                 b.piles.forEach(p => {
                     if (p.status === 'concluida' && p.dateDone) {
                         if (!pileEventsByDate[p.dateDone]) pileEventsByDate[p.dateDone] = 0;
@@ -720,7 +713,6 @@
 
             html += `<strong>🧱 Blocos Concretados (${blocosConcretados.length}):</strong><br>`;
             if (blocosConcretados.length > 0) {
-                // Agrupamento por quantidade de estacas
                 let porQtdEstacas = {};
                 blocosConcretados.forEach(b => {
                     let qtd = b.piles.length;
@@ -786,32 +778,38 @@
                 setTimeout(() => renderCalendar(), 100);
             }
         }
-        function importarRastreioCompleto() {
-    const dadosRastreio = [ /* Cole a array 'dadosRastreio' fornecida acima */ ];
-    
-    let marcadas = 0;
-    const mapaRastreio = {};
-    dadosRastreio.forEach(item => {
-        mapaRastreio[item.id.replace('-', '').toUpperCase()] = item;
-    });
 
-    state.blocks.forEach(bloco => {
-        bloco.piles.forEach(estaca => {
-            const key = estaca.code.replace('-', '').toUpperCase();
-            let match = mapaRastreio[key];
-            if (match) {
-                estaca.status = 'concluida';
-                estaca.dateDone = match.date;
-                if (match.volume > 0) estaca.volume = match.volume;
-                marcadas++;
+        function importarRastreioCompleto(dadosRastreio = []) {
+            if (!Array.isArray(dadosRastreio) || dadosRastreio.length === 0) {
+                alert("Nenhum dado informado para importação.");
+                return;
             }
-        });
-    });
 
-    verificarLiberacaoBlocos();
-    salvarEstado();
-    alert(`Importação concluída! ${marcadas} estacas atualizadas com sucesso.`);
-}
+            let marcadas = 0;
+            const mapaRastreio = {};
+            dadosRastreio.forEach(item => {
+                if (item && item.id) {
+                    mapaRastreio[item.id.replace('-', '').toUpperCase()] = item;
+                }
+            });
+
+            state.blocks.forEach(bloco => {
+                bloco.piles.forEach(estaca => {
+                    const key = estaca.code.replace('-', '').toUpperCase();
+                    let match = mapaRastreio[key];
+                    if (match) {
+                        estaca.status = 'concluida';
+                        estaca.dateDone = match.date;
+                        if (match.volume > 0) estaca.volume = match.volume;
+                        marcadas++;
+                    }
+                });
+            });
+
+            verificarLiberacaoBlocos();
+            salvarEstado();
+            alert(`Importação concluída! ${marcadas} estacas atualizadas com sucesso.`);
+        }
     </script>
 </body>
 </html>
