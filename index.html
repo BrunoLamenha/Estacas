@@ -290,6 +290,23 @@
         let state = { blocks: [] };
         let calendarInstance = null;
 
+        // MAPA EXATO DE VOLUMES DE BLOCOS CONFORME SOLICITADO
+        const volumesBlocosMap = {
+            "PE1": 0.931, "PR1": 0.931,
+            "P18": 2.31, "P26": 2.31, "P36": 2.31, "P42": 2.31, "P48": 2.31, "P52": 2.31, "P102": 2.31, "P105": 2.31,
+            "PTE1": 2.31, "PTE2": 2.31, "PTE3": 2.31, "PTE4": 2.31, "PTE5": 2.31, "PTE6": 2.31, "PTE7": 2.31,
+            "P12": 3.61, "P13": 3.61, "P21": 3.61, "P23": 3.61, "P24": 3.61, "P31": 3.61, "P33": 3.61, "P34": 3.61,
+            "P37": 3.61, "P39": 3.61, "P40": 3.61, "P43": 3.61, "P45": 3.61, "P46": 3.61, "P49": 3.61, "P106": 3.61, "P107": 3.61,
+            "P3": 6.912, "P4": 6.912, "P6": 6.912, "P7": 6.912, "P9": 6.912, "P10": 6.912, "P14": 6.912, "P15": 6.912,
+            "P16": 6.912, "P17": 6.912, "P19": 6.912, "P20": 6.912, "P22": 6.912, "P32": 6.912, "P35": 6.912, "P38": 6.912,
+            "P41": 6.912, "P44": 6.912, "P47": 6.912, "P50": 6.912, "P51": 6.912, "P53": 6.912, "P54": 6.912, "P103": 6.912, "P104": 6.912,
+            "P1": 8.866, "P25": 8.866, "P101": 8.866,
+            "P2": 13.02, "P5": 13.02, "P8": 13.02, "P11": 13.02,
+            "ELEVADOR-A": 3.61,
+            "ELEVADOR-B": 3.61,
+            "ELEVADOR-C": 8.866
+        };
+
         window.onload = function() {
             carregarDados();
             document.getElementById('modal-concrete-date').value = new Date().toISOString().split('T')[0];
@@ -416,7 +433,6 @@
             document.getElementById('kpi-blocos-concretados').innerText = blocosConcretados;
         }
 
-        // Aba principal sem inputs poluindo a tela de campo
         function renderEstacasTab() {
             const container = document.getElementById('estacas-blocks-container');
             container.innerHTML = '';
@@ -457,7 +473,6 @@
             });
         }
 
-        // Renderização da tabela de volumes na nova aba exclusiva
         function renderVolumesTab() {
             const tbody = document.getElementById('table-volumes-body');
             tbody.innerHTML = '';
@@ -663,7 +678,6 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        // RELATÓRIO GERAL SIMPLIFICADO (CONFORME SOLICITADO)
         function gerarRelatorioGeralCompleto() {
             let totalEstacas = 0;
             let estacasConcluidas = 0;
@@ -1199,11 +1213,17 @@
                     };
                 });
 
+                // BUSCA O VOLUME EXATO DO BLOCO DO MAPA FORNECIDO
+                let volBlocoExato = volumesBlocosMap[b.pilar];
+                if (volBlocoExato === undefined) {
+                    volBlocoExato = (piles.length * 1.5).toFixed(2);
+                }
+
                 return {
                     id: b.pilar,
                     name: b.pilar.includes('ELEVADOR') ? `Bloco Elevador (${b.pilar})` : `Pilar ${b.pilar}`,
                     status: 'pendente',
-                    volumeBloco: (piles.length * 1.5).toFixed(2),
+                    volumeBloco: Number(volBlocoExato).toFixed(2),
                     piles: piles,
                     concreteDate: null,
                     nfNumber: ''
@@ -1222,7 +1242,7 @@
                 });
             });
 
-            alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares.\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
+            alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares com volumes customizados.\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
         }
     </script>
 </body>
