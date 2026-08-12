@@ -8,7 +8,7 @@
     <!-- LIBS EXTERNAS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     
-    <!-- FIREBASE SDKs (Modular / Compat) -->
+    <!-- FIREBASE SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -33,7 +33,7 @@
         .header small { font-size: 0.85rem; opacity: 0.9; }
 
         .tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-btn { flex: 1; min-width: 130px; padding: 12px 10px; border: none; background: #e2e8f0; font-weight: bold; font-size: 0.85rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; color: #475569; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+        .tab-btn { flex: 1; min-width: 120px; padding: 12px 10px; border: none; background: #e2e8f0; font-weight: bold; font-size: 0.82rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; color: #475569; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,74,143,0.25); }
 
         .card { background: var(--card-bg); padding: 16px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); border: 1px solid var(--border-color); width: 100%; }
@@ -60,12 +60,9 @@
         .badge-released { background: var(--success); }
         .badge-concreted { background: var(--primary); }
 
-        .pile-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; margin-top: 8px; }
-        .pile-btn { padding: 8px; border: 1px solid var(--border-color); background: #f8fafc; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.15s; font-size: 0.8rem; font-weight: bold; }
+        .pile-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); gap: 6px; margin-top: 8px; }
+        .pile-btn { padding: 10px 6px; border: 1px solid var(--border-color); background: #f8fafc; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.15s; font-size: 0.8rem; font-weight: bold; }
         .pile-btn.done { background: #d1fae5; border-color: #10b981; color: #065f46; }
-
-        .pile-input-group { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-        .pile-input-group input { width: 100%; padding: 4px 6px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; text-align: center; }
 
         input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; }
         label { font-size: 0.75rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px; text-transform: uppercase; }
@@ -87,15 +84,16 @@
 
     <div class="header">
         <h2>🏗️ Gestão de Estacas & Blocos de Fundações</h2>
-        <small>Controle de Liberação, Concretagem & Cronograma Diário (Sincronizado com Firebase)</small>
+        <small>Controle de Apontamento, Concretagem & Relatórios Simplificados</small>
     </div>
 
     <!-- TABS DE NAVEGAÇÃO -->
     <div class="tabs">
-        <button class="tab-btn active" id="tab-estacas-btn" onclick="switchTab('estacas')">🚜 Apontamento Estacas</button>
-        <button class="tab-btn" id="tab-blocos-btn" onclick="switchTab('blocos')">🧱 Concretagem Blocos</button>
-        <button class="tab-btn" id="tab-calendario-btn" onclick="switchTab('calendario')">📅 Cronograma Execução</button>
-        <button class="tab-btn" id="tab-cadastros-btn" onclick="switchTab('cadastros')">⚙️ Configurações / Dados</button>
+        <button class="tab-btn active" id="tab-estacas-btn" onclick="switchTab('estacas')">🚜 Apontamento</button>
+        <button class="tab-btn" id="tab-blocos-btn" onclick="switchTab('blocos')">🧱 Concretagem</button>
+        <button class="tab-btn" id="tab-calendario-btn" onclick="switchTab('calendario')">📅 Cronograma</button>
+        <button class="tab-btn" id="tab-volumes-btn" onclick="switchTab('volumes')">📊 Volumes Estacas</button>
+        <button class="tab-btn" id="tab-cadastros-btn" onclick="switchTab('cadastros')">⚙️ Configurações</button>
     </div>
 
     <!-- INDICADORES GERAIS -->
@@ -112,10 +110,6 @@
             <small>BLOCOS CONCRETADOS 🚚</small>
             <div class="kpi-num" id="kpi-blocos-concretados" style="color:var(--secondary);">0</div>
         </div>
-        <div class="kpi-card">
-            <small>VOLUME TOTAL ESTACAS (m³)</small>
-            <div class="kpi-num" id="kpi-volume-estacas" style="color:#0284c7;">0.00</div>
-        </div>
     </div>
 
     <!-- ABA 1: APONTAMENTO DIÁRIO DE ESTACAS -->
@@ -125,15 +119,15 @@
                 <h3>🚜 Registro Diário de Estacas Concluídas</h3>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <button class="btn-main btn-whatsapp" style="width:auto; margin-top:0;" onclick="gerarRelatorioWhatsappEstacas()">
-                        📲 Enviar Relatório Diário WhatsApp
+                        📲 Relatório Diário WhatsApp
                     </button>
                     <button class="btn-main" style="width:auto; margin-top:0; background-color: #28a745;" onclick="gerarRelatorioGeralCompleto()">
-                        📊 Emitir Relatório Geral Completo
+                        📊 Relatório Geral Simplificado
                     </button>
                 </div>
             </div>
             <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">
-                Clique na estaca para alternar entre realizada/pendente. Preencha o volume individual (m³) se desejado. Ao concluir todas as estacas de um bloco, ele será <strong>liberado automaticamente</strong>.
+                Clique diretamente na estaca para marcar como executada ou pendente. Os volumes individuais podem ser preenchidos na aba <strong>Volumes Estacas</strong>.
             </p>
         </div>
 
@@ -145,7 +139,7 @@
         <div class="card">
             <h3>🧱 Blocos Liberados para Concretagem</h3>
             <p style="font-size:0.8rem; color:#64748b;">
-                Abaixo são exibidos apenas os blocos cujas estacas foram 100% concluídas. Selecione os blocos para programar ou registrar a concretagem.
+                Abaixo são exibidos apenas os blocos cujas estacas foram 100% concluídas. Selecione os blocos para registrar a concretagem.
             </p>
 
             <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -196,7 +190,31 @@
         </div>
     </div>
 
-    <!-- ABA 4: CONFIGURAÇÕES E DADOS -->
+    <!-- ABA 4: VOLUMES DE ESTACAS (NOVA ABA DEDICADA) -->
+    <div id="tab-volumes" style="display:none;">
+        <div class="card">
+            <h3>📊 Lançamento e Conferência de Volumes de Estacas (m³)</h3>
+            <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">
+                Preencha ou ajuste os volumes individuais de concreto lançados em cada estaca para complementar as informações técnicas da obra.
+            </p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bloco / Pilar</th>
+                            <th>Estaca</th>
+                            <th>Status</th>
+                            <th>Data Execução</th>
+                            <th>Volume Concreto (m³)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-volumes-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 5: CONFIGURAÇÕES E DADOS -->
     <div id="tab-cadastros" style="display:none;">
         <div class="card">
             <h3>⚙️ Gerenciar Estrutura de Blocos e Estacas</h3>
@@ -221,7 +239,7 @@
                 </div>
             </div>
             <button class="btn-main" style="margin-top:12px;" onclick="adicionarNovoBloco()">➕ Cadastrar Bloco</button>
-            <button class="btn-main" style="background:#64748b; margin-top:6px;" onclick="carregarDadosDemonstracao()">⚡ Carregar Dados de Exemplo (Seed Inicial)</button>
+            <button class="btn-main" style="background:#64748b; margin-top:6px;" onclick="carregarDadosDemonstracao()">⚡ Carregar Dados de Exemplo</button>
             <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">⚡ Importar Rastreio de Estacas</button>
         </div>
     </div>
@@ -253,7 +271,7 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE[cite: 3]
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBqtptEp5QjIOoAjwx0wT--cswUhSvcsGM",
             authDomain: "vistoria-obra.firebaseapp.com",
@@ -269,11 +287,7 @@
         }
         const db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
 
-        // ESTADO GLOBAL DA APLICAÇÃO
-        let state = {
-            blocks: []
-        };
-
+        let state = { blocks: [] };
         let calendarInstance = null;
 
         window.onload = function() {
@@ -310,10 +324,7 @@
         }
 
         function salvarEstado() {
-            // Salva localmente (instantâneo e offline)
             localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
-
-            // Sobe automaticamente para o Firebase Firestore
             if (db && db.collection) {
                 db.collection('obras_estacas').doc('projeto_atual').set({
                     blocks: state.blocks,
@@ -357,15 +368,10 @@
         function verificarLiberacaoBlocos() {
             state.blocks.forEach(block => {
                 const todasEstacasFeitas = block.piles.length > 0 && block.piles.every(p => p.status === 'concluida');
-                
                 if (todasEstacasFeitas) {
-                    if (block.status === 'pendente') {
-                        block.status = 'liberado';
-                    }
+                    if (block.status === 'pendente') block.status = 'liberado';
                 } else {
-                    if (block.status === 'liberado') {
-                        block.status = 'pendente';
-                    }
+                    if (block.status === 'liberado') block.status = 'pendente';
                 }
             });
         }
@@ -374,6 +380,11 @@
             renderKPIs();
             renderEstacasTab();
             renderBlocosTab();
+            
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab && activeTab.id === 'tab-volumes-btn') {
+                renderVolumesTab();
+            }
             if (document.getElementById('tab-calendario').style.display !== 'none') {
                 renderCalendar();
             }
@@ -382,7 +393,6 @@
         function renderKPIs() {
             let totalEstacas = 0;
             let estacasConcluidas = 0;
-            let volumeTotalEstacas = 0;
             let blocosLiberados = 0;
             let blocosConcretados = 0;
 
@@ -397,7 +407,6 @@
                     totalEstacas++;
                     if (p.status === 'concluida') {
                         estacasConcluidas++;
-                        volumeTotalEstacas += parseFloat(p.volume || 0);
                     }
                 });
             });
@@ -405,9 +414,9 @@
             document.getElementById('kpi-estacas-progresso').innerText = `${estacasConcluidas} / ${totalEstacas}`;
             document.getElementById('kpi-blocos-liberados').innerText = blocosLiberados;
             document.getElementById('kpi-blocos-concretados').innerText = blocosConcretados;
-            document.getElementById('kpi-volume-estacas').innerText = volumeTotalEstacas.toFixed(2);
         }
 
+        // Aba principal sem inputs poluindo a tela de campo
         function renderEstacasTab() {
             const container = document.getElementById('estacas-blocks-container');
             container.innerHTML = '';
@@ -427,13 +436,8 @@
                 let pilesHTML = block.piles.map(p => {
                     let isDone = p.status === 'concluida';
                     return `
-                        <div style="display:flex; flex-direction:column; gap:2px;">
-                            <div class="pile-btn ${isDone ? 'done' : ''}" onclick="togglePileStatus('${block.id}', '${p.id}')">
-                                ${p.code} ${isDone ? '✓' : ''}
-                            </div>
-                            <div class="pile-input-group">
-                                <input type="number" step="0.05" value="${p.volume || ''}" placeholder="Vol m³" onchange="updatePileVolume('${block.id}', '${p.id}', this.value)">
-                            </div>
+                        <div class="pile-btn ${isDone ? 'done' : ''}" onclick="togglePileStatus('${block.id}', '${p.id}')">
+                            ${p.code} ${isDone ? '✓' : ''}
                         </div>
                     `;
                 }).join('');
@@ -444,13 +448,37 @@
                             <span>${block.name}</span>
                             ${statusBadge}
                         </div>
-                        <div style="font-size:0.75rem; color:#64748b;">Qtd Estacas: ${block.piles.length} | Vol Bloco: ${block.volumeBloco} m³</div>
+                        <div style="font-size:0.75rem; color:#64748b;">Estacas: ${block.piles.length} | Vol Bloco: ${block.volumeBloco} m³</div>
                         <div class="pile-list">
                             ${pilesHTML}
                         </div>
                     </div>
                 `;
             });
+        }
+
+        // Renderização da tabela de volumes na nova aba exclusiva
+        function renderVolumesTab() {
+            const tbody = document.getElementById('table-volumes-body');
+            tbody.innerHTML = '';
+            let rowsHTML = '';
+
+            state.blocks.forEach(b => {
+                b.piles.forEach(p => {
+                    rowsHTML += `
+                        <tr>
+                            <td><strong>${b.name}</strong></td>
+                            <td>${p.code}</td>
+                            <td><span class="badge ${p.status === 'concluida' ? 'badge-released' : 'badge-pending'}">${p.status.toUpperCase()}</span></td>
+                            <td>${p.dateDone || '-'}</td>
+                            <td>
+                                <input type="number" step="0.05" value="${p.volume || 0}" style="width:120px;" onchange="updatePileVolume('${b.id}', '${p.id}', this.value)">
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+            tbody.innerHTML = rowsHTML || `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhuma estaca cadastrada.</td></tr>`;
         }
 
         function togglePileStatus(blockId, pileId) {
@@ -607,7 +635,7 @@
             txt += `🏗️ *Progresso de Estacas:*\n`;
             txt += `• Concluídas Hoje: ${executadasHoje}\n`;
             txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${((executadas/(totalEstacas||1))*100).toFixed(1)}%)\n\n`;
-            txt += `🧱 *Blocos Liberados para Concretagem (${blocosLiberados.length}):*\n`;
+            txt += `🧱 *Blocos Liberados (${blocosLiberados.length}):*\n`;
             txt += `• ${blocosLiberados.length > 0 ? blocosLiberados.join(', ') : 'Nenhum bloco liberado até o momento.'}\n`;
 
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
@@ -635,11 +663,10 @@
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
         }
 
-        // CENTRAL DE RELATÓRIO GERAL COMPLETO
+        // RELATÓRIO GERAL SIMPLIFICADO (CONFORME SOLICITADO)
         function gerarRelatorioGeralCompleto() {
             let totalEstacas = 0;
             let estacasConcluidas = 0;
-            let volumeTotalExecutado = 0;
             let blocosConcretados = 0;
             let blocosLiberados = 0;
             let historicoPorData = {};
@@ -652,15 +679,11 @@
                     totalEstacas++;
                     if (p.status === 'concluida') {
                         estacasConcluidas++;
-                        let vol = parseFloat(p.volume || 0);
-                        volumeTotalExecutado += vol;
-
                         let dataExec = p.dateDone || 'Data não informada';
                         if (!historicoPorData[dataExec]) {
-                            historicoPorData[dataExec] = { count: 0, volume: 0, estacas: [] };
+                            historicoPorData[dataExec] = { count: 0, estacas: [] };
                         }
                         historicoPorData[dataExec].count++;
-                        historicoPorData[dataExec].volume += vol;
                         historicoPorData[dataExec].estacas.push(`${b.name} (${p.code})`);
                     }
                 });
@@ -673,7 +696,6 @@
             
             txt += `📈 *RESUMO EXECUTIVO:*\n`;
             txt += `• Progresso de Estacas: *${estacasConcluidas}/${totalEstacas}* (${percentualGeral}%)\n`;
-            txt += `• Volume Total Concretado: *${volumeTotalExecutado.toFixed(2)} m³*\n`;
             txt += `• Blocos Liberados: ${blocosLiberados}\n`;
             txt += `• Blocos Concretados: ${blocosConcretados}\n\n`;
 
@@ -683,7 +705,7 @@
             datasOrdenadas.forEach(data => {
                 let info = historicoPorData[data];
                 let dataFormatada = data.includes('-') ? data.split('-').reverse().join('/') : data;
-                txt += `\n🔹 *${dataFormatada}*: ${info.count} estaca(s) | ${info.volume.toFixed(2)} m³\n`;
+                txt += `\n🔹 *${dataFormatada}*: ${info.count} estaca(s)\n`;
                 txt += `   Estacas: ${info.estacas.join(', ')}\n`;
             });
 
@@ -851,10 +873,13 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${tab}-btn`).classList.add('active');
 
-            ['estacas', 'blocos', 'calendario', 'cadastros'].forEach(t => {
+            ['estacas', 'blocos', 'calendario', 'volumes', 'cadastros'].forEach(t => {
                 document.getElementById(`tab-${t}`).style.display = (t === tab) ? 'block' : 'none';
             });
 
+            if (tab === 'volumes') {
+                renderVolumesTab();
+            }
             if (tab === 'calendario') {
                 setTimeout(() => renderCalendar(), 100);
             }
@@ -1197,7 +1222,7 @@
                 });
             });
 
-            alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares (incluindo o Bloco do Elevador).\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
+            alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares.\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
         }
     </script>
 </body>
