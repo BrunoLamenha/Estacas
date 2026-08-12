@@ -317,12 +317,23 @@
             document.getElementById('modal-concrete-date').value = new Date().toISOString().split('T')[0];
         };
 
+        function ordenarBlocos() {
+            if (!state.blocks) return;
+            state.blocks.sort((a, b) => {
+                // Elevador 1 sempre em destaque no topo (opcional, ou segue ordem alfanumérica pura)
+                if (a.name === 'ELEVADOR 1') return -1;
+                if (b.name === 'ELEVADOR 1') return 1;
+                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+            });
+        }
+
         function carregarDados() {
             const localData = localStorage.getItem('estacas_blocos_db');
             if (localData) {
                 try {
                     state = JSON.parse(localData);
                     verificarLiberacaoBlocos();
+                    ordenarBlocos();
                     renderAll();
                 } catch(e){}
             }
@@ -332,6 +343,7 @@
                     if (doc.exists && doc.data().blocks) {
                         state.blocks = doc.data().blocks;
                         verificarLiberacaoBlocos();
+                        ordenarBlocos();
                         renderAll();
                         localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
                     } else if (!localData || state.blocks.length === 0) {
@@ -346,6 +358,7 @@
         }
 
         function salvarEstado() {
+            ordenarBlocos();
             localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
             if (db && db.collection) {
                 db.collection('obras_estacas').doc('projeto_atual').set({
@@ -858,7 +871,7 @@
         }
 
         function adicionarNovoBloco() {
-            const name = document.getElementById('new-block-name').value.trim();
+            const name = document.getElementById('new-block-name').value.trim().toUpperCase();
             const count = parseInt(document.getElementById('new-block-piles-count').value) || 1;
             const pileVol = parseFloat(document.getElementById('new-pile-vol').value) || 0;
             const blockVol = parseFloat(document.getElementById('new-block-vol').value) || 0;
@@ -1226,7 +1239,7 @@
 
                 return {
                     id: b.pilar,
-                    name: b.pilar.includes('ELEVADOR') ? `Bloco Elevador 1` : `Pilar ${b.pilar}`,
+                    name: b.pilar,
                     status: 'pendente',
                     volumeBloco: Number(volBlocoExato).toFixed(2),
                     piles: piles,
@@ -1236,6 +1249,7 @@
             });
 
             verificarLiberacaoBlocos();
+            ordenarBlocos();
             salvarEstado();
 
             let totalEstacas = 0;
@@ -1247,7 +1261,7 @@
                 });
             });
 
-            alert(`Estrutura sincronizada com sucesso!\n\n- Elevador 1 unificado.\n- ${concluidas} de ${totalEstacas} estacas mapeadas.`);
+            alert(`Estrutura sincronizada com sucesso!\n\n- Blocos ordenados por nome.\n- ${concluidas} de ${totalEstacas} estacas mapeadas.`);
         }
     </script>
 </body>
