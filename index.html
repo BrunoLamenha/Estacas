@@ -779,7 +779,78 @@
             }
         }
 function importarRastreioCompleto() {
-    const dadosRastreio = [
+    // 1. MAPEAMENTO REAL DOS PILARES E SUAS RESPECTIVAS ESTACAS
+    const estruturaBlocos = [
+        {"pilar": "PE1", "estacas": ["E-107", "E-108"]},
+        {"pilar": "PR1", "estacas": ["E-1", "E-2"]},
+        {"pilar": "P18", "estacas": ["E-119", "E-120", "E-121"]},
+        {"pilar": "P26", "estacas": ["E-169", "E-170", "E-171"]},
+        {"pilar": "P36", "estacas": ["E-194", "E-195", "E-196"]},
+        {"pilar": "P42", "estacas": ["E-227", "E-228", "E-229"]},
+        {"pilar": "P48", "estacas": ["E-259", "E-260", "E-261"]},
+        {"pilar": "P52", "estacas": ["E-293", "E-294", "E-295"]},
+        {"pilar": "P102", "estacas": ["E-69", "E-70", "E-71"]},
+        {"pilar": "P105", "estacas": ["E-202", "E-203", "E-204"]},
+        {"pilar": "PTE1", "estacas": ["E-50", "E-51", "E-52"]},
+        {"pilar": "PTE2", "estacas": ["E-47", "E-48", "E-49"]},
+        {"pilar": "PTE3", "estacas": ["E-230", "E-231", "E-232"]},
+        {"pilar": "PTE4", "estacas": ["E-262", "E-263", "E-264"]},
+        {"pilar": "PTE5", "estacas": ["E-299", "E-300", "E-301"]},
+        {"pilar": "PTE6", "estacas": ["E-296", "E-297", "E-298"]},
+        {"pilar": "PTE7", "estacas": ["E-44", "E-45", "E-46"]},
+        {"pilar": "P12", "estacas": ["E-89", "E-90", "E-91", "E-92"]},
+        {"pilar": "P13", "estacas": ["E-93", "E-94", "E-95", "E-96"]},
+        {"pilar": "P21", "estacas": ["E-132", "E-133", "E-134", "E-135"]},
+        {"pilar": "P23", "estacas": ["E-141", "E-142", "E-143", "E-144"]},
+        {"pilar": "P24", "estacas": ["E-159", "E-160", "E-161", "E-162"]},
+        {"pilar": "P31", "estacas": ["E-172", "E-173", "E-174", "E-175"]},
+        {"pilar": "P33", "estacas": ["E-181", "E-182", "E-183", "E-184"]},
+        {"pilar": "P34", "estacas": ["E-185", "E-186", "E-187", "E-188"]},
+        {"pilar": "P37", "estacas": ["E-205", "E-206", "E-207", "E-208"]},
+        {"pilar": "P39", "estacas": ["E-214", "E-215", "E-216", "E-217"]},
+        {"pilar": "P40", "estacas": ["E-218", "E-219", "E-220", "E-221"]},
+        {"pilar": "P43", "estacas": ["E-233", "E-234", "E-235", "E-236"]},
+        {"pilar": "P45", "estacas": ["E-242", "E-243", "E-244", "E-245"]},
+        {"pilar": "P46", "estacas": ["E-250", "E-251", "E-252", "E-253"]},
+        {"pilar": "P49", "estacas": ["E-265", "E-266", "E-267", "E-268"]},
+        {"pilar": "P106", "estacas": ["E-246", "E-247", "E-248", "E-249"]},
+        {"pilar": "P107", "estacas": ["E-279", "E-280", "E-281", "E-282"]},
+        {"pilar": "P3", "estacas": ["E-16", "E-17", "E-18", "E-19", "E-20"]},
+        {"pilar": "P4", "estacas": ["E-27", "E-28", "E-29", "E-30", "E-31"]},
+        {"pilar": "P6", "estacas": ["E-39", "E-40", "E-41", "E-42", "E-43"]},
+        {"pilar": "P7", "estacas": ["E-53", "E-54", "E-55", "E-56", "E-57"]},
+        {"pilar": "P9", "estacas": ["E-65", "E-66", "E-67", "E-68", "E-69"]},
+        {"pilar": "P10", "estacas": ["E-77", "E-78", "E-79", "E-80", "E-81"]},
+        {"pilar": "P14", "estacas": ["E-97", "E-98", "E-99", "E-100", "E-101"]},
+        {"pilar": "P15", "estacas": ["E-102", "E-103", "E-104", "E-105", "E-106"]},
+        {"pilar": "P16", "estacas": ["E-109", "E-110", "E-111", "E-112", "E-113"]},
+        {"pilar": "P17", "estacas": ["E-114", "E-115", "E-116", "E-117", "E-118"]},
+        {"pilar": "P19", "estacas": ["E-122", "E-123", "E-124", "E-125", "E-126"]},
+        {"pilar": "P20", "estacas": ["E-127", "E-128", "E-129", "E-130", "E-131"]},
+        {"pilar": "P22", "estacas": ["E-136", "E-137", "E-138", "E-139", "E-140"]},
+        {"pilar": "P32", "estacas": ["E-176", "E-177", "E-178", "E-179", "E-180"]},
+        {"pilar": "P35", "estacas": ["E-189", "E-190", "E-191", "E-192", "E-193"]},
+        {"pilar": "P38", "estacas": ["E-209", "E-210", "E-211", "E-212", "E-213"]},
+        {"pilar": "P41", "estacas": ["E-222", "E-223", "E-224", "E-225", "E-226"]},
+        {"pilar": "P44", "estacas": ["E-237", "E-238", "E-239", "E-240", "E-241"]},
+        {"pilar": "P47", "estacas": ["E-254", "E-255", "E-256", "E-257", "E-258"]},
+        {"pilar": "P50", "estacas": ["E-274", "E-275", "E-276", "E-277", "E-278"]},
+        {"pilar": "P51", "estacas": ["E-283", "E-284", "E-285", "E-286", "E-287"]},
+        {"pilar": "P53", "estacas": ["E-269", "E-270", "E-271", "E-272", "E-273"]},
+        {"pilar": "P54", "estacas": ["E-288", "E-289", "E-290", "E-291", "E-292"]},
+        {"pilar": "P103", "estacas": ["E-72", "E-73", "E-74", "E-75", "E-76"]},
+        {"pilar": "P104", "estacas": ["E-197", "E-198", "E-199", "E-200", "E-201"]},
+        {"pilar": "P1", "estacas": ["E-3", "E-4", "E-5", "E-6", "E-7", "E-8"]},
+        {"pilar": "P25", "estacas": ["E-163", "E-164", "E-165", "E-166", "E-167", "E-168"]},
+        {"pilar": "P101", "estacas": ["E-21", "E-22", "E-23", "E-24", "E-25", "E-26"]},
+        {"pilar": "P2", "estacas": ["E-9", "E-10", "E-11", "E-12", "E-13", "E-14", "E-15"]},
+        {"pilar": "P5", "estacas": ["E-32", "E-33", "E-34", "E-35", "E-36", "E-37", "E-38"]},
+        {"pilar": "P8", "estacas": ["E-58", "E-59", "E-60", "E-61", "E-62", "E-63", "E-64"]},
+        {"pilar": "P11", "estacas": ["E-82", "E-83", "E-84", "E-85", "E-86", "E-87", "E-88"]}
+    ];
+
+    // 2. DADOS DE EXECUÇÃO DAS ESTACAS DA PLANILHA DE RASTREIO
+    const dadosExecucao = [
         {"id": "E-281", "date": "2026-06-18", "volume": 1.92},
         {"id": "E-249", "date": "2026-06-18", "volume": 2.12},
         {"id": "E-299", "date": "2026-06-18", "volume": 2.04},
@@ -999,61 +1070,53 @@ function importarRastreioCompleto() {
         {"id": "E-47", "date": "2026-08-10", "volume": 2.15}
     ];
 
-    let marcadas = 0;
-    const mapaRastreio = {};
-
-    dadosRastreio.forEach(item => {
+    // Criar mapa para cruzamento rápido de dados
+    const mapaExecucao = {};
+    dadosExecucao.forEach(item => {
         const key = item.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-        mapaRastreio[key] = item;
+        mapaExecucao[key] = item;
     });
 
-    // Tenta primeiro vincular com os blocos/estacas já existentes
-    state.blocks.forEach(bloco => {
-        bloco.piles.forEach(estaca => {
-            const keyCode = (estaca.code || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-            const keyId = (estaca.id || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    // 3. RECRIAR O ESTADO COM OS BLOCOS/PILARES REAIS E SUAS ESTACAS
+    state.blocks = estruturaBlocos.map(b => {
+        let piles = b.estacas.map(codEstaca => {
+            const key = codEstaca.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            let exec = mapaExecucao[key];
 
-            let match = mapaRastreio[keyCode] || mapaRastreio[keyId];
-
-            if (match) {
-                estaca.status = 'concluida';
-                estaca.dateDone = match.date;
-                if (match.volume > 0) estaca.volume = match.volume;
-                marcadas++;
-            }
-        });
-    });
-
-    // Se não encontrou estacas nos blocos antigos, cria o Bloco de Rastreio com as 217 estacas reais
-    if (marcadas === 0) {
-        let pilesList = dadosRastreio.map(item => {
-            let isConcluida = item.volume > 0 || item.date !== '';
+            let isDone = exec && (exec.volume > 0 || exec.date !== '');
             return {
-                id: item.id,
-                code: item.id,
-                status: isConcluida ? 'concluida' : 'pendente',
-                volume: item.volume,
-                dateDone: isConcluida ? item.date : null
+                id: `${b.pilar}-${codEstaca}`,
+                code: codEstaca,
+                status: isDone ? 'concluida' : 'pendente',
+                volume: exec ? exec.volume : 0.85,
+                dateDone: isDone ? exec.date : null
             };
         });
 
-        // Adiciona um bloco com todas as estacas reais da planilha
-        state.blocks = [{
-            id: 'BLOCO-RASTREIO',
-            name: 'Bloco Geral (Planilha)',
+        return {
+            id: b.pilar,
+            name: `Pilar ${b.pilar}`,
             status: 'pendente',
-            volumeBloco: '0.00',
-            piles: pilesList,
+            volumeBloco: (piles.length * 1.5).toFixed(2),
+            piles: piles,
             concreteDate: null,
             nfNumber: ''
-        }];
-
-        marcadas = pilesList.filter(p => p.status === 'concluida').length;
-    }
+        };
+    });
 
     verificarLiberacaoBlocos();
     salvarEstado();
-    alert(`Importação concluída com sucesso! ${marcadas} estacas foram cadastradas e atualizadas.`);
+
+    let totalEstacas = 0;
+    let concluidas = 0;
+    state.blocks.forEach(b => {
+        b.piles.forEach(p => {
+            totalEstacas++;
+            if (p.status === 'concluida') concluidas++;
+        });
+    });
+
+    alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares cadastrados.\n- ${concluidas} de ${totalEstacas} estacas concluídas e atualizadas.`);
 }
     </script>
 </body>
