@@ -215,6 +215,9 @@
             </div>
             <button class="btn-main" style="margin-top:12px;" onclick="adicionarNovoBloco()">➕ Cadastrar Bloco</button>
             <button class="btn-main" style="background:#64748b; margin-top:6px;" onclick="carregarDadosDemonstracao()">⚡ Carregar Dados de Exemplo (Seed Inicial)</button>
+            <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">
+    ⚡ Importar 217 Estacas da Planilha de Rastreio
+</button>
         </div>
     </div>
 
@@ -783,6 +786,32 @@
                 setTimeout(() => renderCalendar(), 100);
             }
         }
+        function importarRastreioCompleto() {
+    const dadosRastreio = [ /* Cole a array 'dadosRastreio' fornecida acima */ ];
+    
+    let marcadas = 0;
+    const mapaRastreio = {};
+    dadosRastreio.forEach(item => {
+        mapaRastreio[item.id.replace('-', '').toUpperCase()] = item;
+    });
+
+    state.blocks.forEach(bloco => {
+        bloco.piles.forEach(estaca => {
+            const key = estaca.code.replace('-', '').toUpperCase();
+            let match = mapaRastreio[key];
+            if (match) {
+                estaca.status = 'concluida';
+                estaca.dateDone = match.date;
+                if (match.volume > 0) estaca.volume = match.volume;
+                marcadas++;
+            }
+        });
+    });
+
+    verificarLiberacaoBlocos();
+    salvarEstado();
+    alert(`Importação concluída! ${marcadas} estacas atualizadas com sucesso.`);
+}
     </script>
 </body>
 </html>
