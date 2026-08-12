@@ -778,8 +778,7 @@
                 setTimeout(() => renderCalendar(), 100);
             }
         }
-
-       function importarRastreioCompleto() {
+function importarRastreioCompleto() {
     const dadosRastreio = [
         {"id": "E-281", "date": "2026-06-18", "volume": 1.92},
         {"id": "E-249", "date": "2026-06-18", "volume": 2.12},
@@ -1003,15 +1002,14 @@
     let marcadas = 0;
     const mapaRastreio = {};
 
-    // Cria um mapa buscando por IDs limpos (ex: E281)
     dadosRastreio.forEach(item => {
         const key = item.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
         mapaRastreio[key] = item;
     });
 
+    // Tenta primeiro vincular com os blocos/estacas já existentes
     state.blocks.forEach(bloco => {
         bloco.piles.forEach(estaca => {
-            // Busca pelo 'code' (ex: E-281 ou E281) ou pelo 'id'
             const keyCode = (estaca.code || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
             const keyId = (estaca.id || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 
@@ -1020,17 +1018,42 @@
             if (match) {
                 estaca.status = 'concluida';
                 estaca.dateDone = match.date;
-                if (match.volume > 0) {
-                    estaca.volume = match.volume;
-                }
+                if (match.volume > 0) estaca.volume = match.volume;
                 marcadas++;
             }
         });
     });
 
+    // Se não encontrou estacas nos blocos antigos, cria o Bloco de Rastreio com as 217 estacas reais
+    if (marcadas === 0) {
+        let pilesList = dadosRastreio.map(item => {
+            let isConcluida = item.volume > 0 || item.date !== '';
+            return {
+                id: item.id,
+                code: item.id,
+                status: isConcluida ? 'concluida' : 'pendente',
+                volume: item.volume,
+                dateDone: isConcluida ? item.date : null
+            };
+        });
+
+        // Adiciona um bloco com todas as estacas reais da planilha
+        state.blocks = [{
+            id: 'BLOCO-RASTREIO',
+            name: 'Bloco Geral (Planilha)',
+            status: 'pendente',
+            volumeBloco: '0.00',
+            piles: pilesList,
+            concreteDate: null,
+            nfNumber: ''
+        }];
+
+        marcadas = pilesList.filter(p => p.status === 'concluida').length;
+    }
+
     verificarLiberacaoBlocos();
     salvarEstado();
-    alert(`Importação concluída! ${marcadas} estacas atualizadas com sucesso.`);
+    alert(`Importação concluída com sucesso! ${marcadas} estacas foram cadastradas e atualizadas.`);
 }
     </script>
 </body>
