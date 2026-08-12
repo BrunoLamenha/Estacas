@@ -627,11 +627,11 @@
             let executadas = 0;
             let hoje = new Date().toISOString().split('T')[0];
             let executadasHoje = 0;
-            let blocosLiberados = [];
+            let qtdBlocosLiberados = 0;
 
             state.blocks.forEach(b => {
                 if (b.status === 'liberado' || b.status === 'concretado') {
-                    blocosLiberados.push(b.name);
+                    qtdBlocosLiberados++;
                 }
 
                 b.piles.forEach(p => {
@@ -643,13 +643,15 @@
                 });
             });
 
+            let percentualGeral = totalEstacas > 0 ? ((executadas / totalEstacas) * 100).toFixed(1) : 0;
+
             let txt = `*📊 RELATÓRIO DIÁRIO DE ESTACAS & FUNDAÇÕES*\n`;
             txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
             txt += `🏗️ *Progresso de Estacas:*\n`;
             txt += `• Concluídas Hoje: ${executadasHoje}\n`;
-            txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${((executadas/(totalEstacas||1))*100).toFixed(1)}%)\n\n`;
-            txt += `🧱 *Blocos Liberados (${blocosLiberados.length}):*\n`;
-            txt += `• ${blocosLiberados.length > 0 ? blocosLiberados.join(', ') : 'Nenhum bloco liberado até o momento.'}\n`;
+            txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${percentualGeral}%)\n\n`;
+            txt += `🧱 *Blocos Liberados:*\n`;
+            txt += `• Total: ${qtdBlocosLiberados} bloco(s)\n`;
 
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
         }
@@ -681,11 +683,18 @@
             let estacasConcluidas = 0;
             let blocosConcretados = 0;
             let blocosLiberados = 0;
+            let nomesBlocosLiberados = [];
             let historicoPorData = {};
 
             state.blocks.forEach(b => {
-                if (b.status === 'concretado') blocosConcretados++;
-                if (b.status === 'liberado') blocosLiberados++;
+                if (b.status === 'concretado') {
+                    blocosConcretados++;
+                    blocosLiberados++;
+                    nomesBlocosLiberados.push(b.name);
+                } else if (b.status === 'liberado') {
+                    blocosLiberados++;
+                    nomesBlocosLiberados.push(b.name);
+                }
 
                 b.piles.forEach(p => {
                     totalEstacas++;
@@ -708,7 +717,8 @@
             
             txt += `📈 *RESUMO EXECUTIVO:*\n`;
             txt += `• Progresso de Estacas: *${estacasConcluidas}/${totalEstacas}* (${percentualGeral}%)\n`;
-            txt += `• Blocos Liberados: ${blocosLiberados}\n`;
+            txt += `• Blocos Liberados (${blocosLiberados}):\n`;
+            txt += `  ${nomesBlocosLiberados.length > 0 ? nomesBlocosLiberados.join(', ') : 'Nenhum'}\n`;
             txt += `• Blocos Concretados: ${blocosConcretados}\n\n`;
 
             txt += `📅 *HISTÓRICO DE EXECUÇÃO POR DATA:*\n`;
