@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Estacas & Concretagem de Blocos</title>
 
+    <!-- CONFIGURAÇÃO PWA / ÍCONE PARA ATALHO NO CELULAR -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Controle de Fundações","short_name":"Fundações","start_url":".","display":"standalone","background_color":"#004a8f","theme_color":"#004a8f","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23ffffff%22><path d=%22M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z%22/></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Fundações">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23004a8f%22><path d=%22M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z%22/></svg>">
+
     <!-- LIBS EXTERNAS -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     
@@ -127,7 +134,7 @@
                 </div>
             </div>
             <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">
-                Clique diretamente na estaca para marcar como executada ou pendente. Os volumes individuais podem ser preenchidos na aba <strong>Volumes Estacas</strong>.
+                Clique diretamente na estaca para marcar como executada ou pendente. As datas e volumes individuais podem ser ajustados na aba <strong>Volumes Estacas</strong>.
             </p>
         </div>
 
@@ -190,12 +197,12 @@
         </div>
     </div>
 
-    <!-- ABA 4: VOLUMES DE ESTACAS (NOVA ABA DEDICADA) -->
+    <!-- ABA 4: VOLUMES E DATAS DE ESTACAS -->
     <div id="tab-volumes" style="display:none;">
         <div class="card">
-            <h3>📊 Lançamento e Conferência de Volumes de Estacas (m³)</h3>
+            <h3>📊 Lançamento, Datas e Volumes de Estacas (m³)</h3>
             <p style="font-size:0.8rem; color:#64748b; margin-bottom:15px;">
-                Preencha ou ajuste os volumes individuais de concreto lançados em cada estaca para complementar as informações técnicas da obra.
+                Ajuste os volumes ou altere livremente a data de execução de qualquer estaca cadastrada no sistema.
             </p>
             <div class="table-responsive">
                 <table>
@@ -240,7 +247,7 @@
             </div>
             <button class="btn-main" style="margin-top:12px;" onclick="adicionarNovoBloco()">➕ Cadastrar Bloco</button>
             <button class="btn-main" style="background:#64748b; margin-top:6px;" onclick="carregarDadosDemonstracao()">⚡ Carregar Dados de Exemplo</button>
-            <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">⚡ Importar Rastreio de Estacas</button>
+            <button class="btn-main" style="background:#0891b2; margin-top:6px;" onclick="importarRastreioCompleto()">⚡ Sincronizar Rastreio e Blocos</button>
         </div>
     </div>
 
@@ -290,7 +297,7 @@
         let state = { blocks: [] };
         let calendarInstance = null;
 
-        // MAPA EXATO DE VOLUMES DE BLOCOS CONFORME SOLICITADO
+        // MAPA EXATO DE VOLUMES DE BLOCOS (ELEVADOR 1 CONSOLIDADO)
         const volumesBlocosMap = {
             "PE1": 0.931, "PR1": 0.931,
             "P18": 2.31, "P26": 2.31, "P36": 2.31, "P42": 2.31, "P48": 2.31, "P52": 2.31, "P102": 2.31, "P105": 2.31,
@@ -302,9 +309,7 @@
             "P41": 6.912, "P44": 6.912, "P47": 6.912, "P50": 6.912, "P51": 6.912, "P53": 6.912, "P54": 6.912, "P103": 6.912, "P104": 6.912,
             "P1": 8.866, "P25": 8.866, "P101": 8.866,
             "P2": 13.02, "P5": 13.02, "P8": 13.02, "P11": 13.02,
-            "ELEVADOR-A": 3.61,
-            "ELEVADOR-B": 3.61,
-            "ELEVADOR-C": 8.866
+            "ELEVADOR 1": 16.08
         };
 
         window.onload = function() {
@@ -330,13 +335,13 @@
                         renderAll();
                         localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
                     } else if (!localData || state.blocks.length === 0) {
-                        carregarDadosDemonstracao();
+                        importarRastreioCompleto();
                     }
                 }).catch(err => {
-                    if (!localData || state.blocks.length === 0) carregarDadosDemonstracao();
+                    if (!localData || state.blocks.length === 0) importarRastreioCompleto();
                 });
             } else if (!localData || state.blocks.length === 0) {
-                carregarDadosDemonstracao();
+                importarRastreioCompleto();
             }
         }
 
@@ -354,32 +359,7 @@
         }
 
         function carregarDadosDemonstracao() {
-            state.blocks = [];
-            for (let i = 1; i <= 10; i++) {
-                let name = `B-0${i}`;
-                let numPiles = (i % 3 === 0) ? 4 : (i % 2 === 0 ? 3 : 2);
-                let piles = [];
-                for (let p = 1; p <= numPiles; p++) {
-                    piles.push({
-                        id: `${name}-E${p}`,
-                        code: `E${p}`,
-                        status: 'pendente',
-                        volume: 0.85,
-                        dateDone: null
-                    });
-                }
-                state.blocks.push({
-                    id: name,
-                    name: name,
-                    status: 'pendente',
-                    volumeBloco: (numPiles * 1.5).toFixed(2),
-                    piles: piles,
-                    concreteDate: null,
-                    nfNumber: ''
-                });
-            }
-            verificarLiberacaoBlocos();
-            salvarEstado();
+            importarRastreioCompleto();
         }
 
         function verificarLiberacaoBlocos() {
@@ -485,9 +465,11 @@
                             <td><strong>${b.name}</strong></td>
                             <td>${p.code}</td>
                             <td><span class="badge ${p.status === 'concluida' ? 'badge-released' : 'badge-pending'}">${p.status.toUpperCase()}</span></td>
-                            <td>${p.dateDone || '-'}</td>
                             <td>
-                                <input type="number" step="0.05" value="${p.volume || 0}" style="width:120px;" onchange="updatePileVolume('${b.id}', '${p.id}', this.value)">
+                                <input type="date" value="${p.dateDone || ''}" style="width:145px;" onchange="updatePileDate('${b.id}', '${p.id}', this.value)">
+                            </td>
+                            <td>
+                                <input type="number" step="0.05" value="${p.volume || 0}" style="width:100px;" onchange="updatePileVolume('${b.id}', '${p.id}', this.value)">
                             </td>
                         </tr>
                     `;
@@ -512,6 +494,22 @@
 
             verificarLiberacaoBlocos();
             salvarEstado();
+        }
+
+        function updatePileDate(blockId, pileId, val) {
+            const block = state.blocks.find(b => b.id === blockId);
+            if (!block) return;
+            const pile = block.piles.find(p => p.id === pileId);
+            if (pile) {
+                pile.dateDone = val || null;
+                if (val && pile.status !== 'concluida') {
+                    pile.status = 'concluida';
+                } else if (!val && pile.status === 'concluida') {
+                    pile.status = 'pendente';
+                }
+                verificarLiberacaoBlocos();
+                salvarEstado();
+            }
         }
 
         function updatePileVolume(blockId, pileId, val) {
@@ -901,9 +899,7 @@
 
         function importarRastreioCompleto() {
             const estruturaBlocos = [
-                {"pilar": "ELEVADOR-A", "estacas": ["E-145", "E-146", "E-147", "E-148"]},
-                {"pilar": "ELEVADOR-B", "estacas": ["E-149", "E-150", "E-151", "E-152"]},
-                {"pilar": "ELEVADOR-C", "estacas": ["E-153", "E-154", "E-155", "E-156", "E-157", "E-158"]},
+                {"pilar": "ELEVADOR 1", "estacas": ["E-145", "E-146", "E-147", "E-148", "E-149", "E-150", "E-151", "E-152", "E-153", "E-154", "E-155", "E-156", "E-157", "E-158"]},
                 {"pilar": "PE1", "estacas": ["E-107", "E-108"]},
                 {"pilar": "PR1", "estacas": ["E-1", "E-2"]},
                 {"pilar": "P18", "estacas": ["E-119", "E-120", "E-121"]},
@@ -1213,7 +1209,6 @@
                     };
                 });
 
-                // BUSCA O VOLUME EXATO DO BLOCO DO MAPA FORNECIDO
                 let volBlocoExato = volumesBlocosMap[b.pilar];
                 if (volBlocoExato === undefined) {
                     volBlocoExato = (piles.length * 1.5).toFixed(2);
@@ -1221,7 +1216,7 @@
 
                 return {
                     id: b.pilar,
-                    name: b.pilar.includes('ELEVADOR') ? `Bloco Elevador (${b.pilar})` : `Pilar ${b.pilar}`,
+                    name: b.pilar.includes('ELEVADOR') ? `Bloco Elevador 1` : `Pilar ${b.pilar}`,
                     status: 'pendente',
                     volumeBloco: Number(volBlocoExato).toFixed(2),
                     piles: piles,
@@ -1242,7 +1237,7 @@
                 });
             });
 
-            alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares com volumes customizados.\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
+            alert(`Estrutura sincronizada com sucesso!\n\n- Elevador 1 unificado.\n- ${concluidas} de ${totalEstacas} estacas mapeadas.`);
         }
     </script>
 </body>
