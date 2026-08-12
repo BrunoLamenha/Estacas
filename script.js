@@ -1,987 +1,984 @@
- <script>
-        // CONFIGURAÇÃO FIREBASE
-        const firebaseConfig = {
-            apiKey: "AIzaSyBqtptEp5QjIOoAjwx0wT--cswUhSvcsGM",
-            authDomain: "vistoria-obra.firebaseapp.com",
-            projectId: "vistoria-obra",
-            storageBucket: "vistoria-obra.firebasestorage.app",
-            messagingSenderId: "269277062191",
-            appId: "1:269277062191:web:d0abe0e5e48f601acd12da",
-            measurementId: "G-T3LF8WVB0Q"
-        };
+// CONFIGURAÇÃO FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyBqtptEp5QjIOoAjwx0wT--cswUhSvcsGM",
+    authDomain: "vistoria-obra.firebaseapp.com",
+    projectId: "vistoria-obra",
+    storageBucket: "vistoria-obra.firebasestorage.app",
+    messagingSenderId: "269277062191",
+    appId: "1:269277062191:web:d0abe0e5e48f601acd12da",
+    measurementId: "G-T3LF8WVB0Q"
+};
 
-        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore() : null;
 
-        let state = { blocks: [] };
-        let calendarInstance = null;
+let state = { blocks: [] };
+let calendarInstance = null;
 
-        // MAPA EXATO DE VOLUMES DE BLOCOS (ELEVADOR 1 CONSOLIDADO)
-        const volumesBlocosMap = {
-            "PE1": 0.931, "PR1": 0.931,
-            "P18": 2.31, "P26": 2.31, "P36": 2.31, "P42": 2.31, "P48": 2.31, "P52": 2.31, "P102": 2.31, "P105": 2.31,
-            "PTE1": 2.31, "PTE2": 2.31, "PTE3": 2.31, "PTE4": 2.31, "PTE5": 2.31, "PTE6": 2.31, "PTE7": 2.31,
-            "P12": 3.61, "P13": 3.61, "P21": 3.61, "P23": 3.61, "P24": 3.61, "P31": 3.61, "P33": 3.61, "P34": 3.61,
-            "P37": 3.61, "P39": 3.61, "P40": 3.61, "P43": 3.61, "P45": 3.61, "P46": 3.61, "P49": 3.61, "P106": 3.61, "P107": 3.61,
-            "P3": 6.912, "P4": 6.912, "P6": 6.912, "P7": 6.912, "P9": 6.912, "P10": 6.912, "P14": 6.912, "P15": 6.912,
-            "P16": 6.912, "P17": 6.912, "P19": 6.912, "P20": 6.912, "P22": 6.912, "P32": 6.912, "P35": 6.912, "P38": 6.912,
-            "P41": 6.912, "P44": 6.912, "P47": 6.912, "P50": 6.912, "P51": 6.912, "P53": 6.912, "P54": 6.912, "P103": 6.912, "P104": 6.912,
-            "P1": 8.866, "P25": 8.866, "P101": 8.866,
-            "P2": 13.02, "P5": 13.02, "P8": 13.02, "P11": 13.02,
-            "ELEVADOR 1": 16.08
-        };
+// MAPA EXATO DE VOLUMES DE BLOCOS (ELEVADOR 1 CONSOLIDADO)
+const volumesBlocosMap = {
+    "PE1": 0.931, "PR1": 0.931,
+    "P18": 2.31, "P26": 2.31, "P36": 2.31, "P42": 2.31, "P48": 2.31, "P52": 2.31, "P102": 2.31, "P105": 2.31,
+    "PTE1": 2.31, "PTE2": 2.31, "PTE3": 2.31, "PTE4": 2.31, "PTE5": 2.31, "PTE6": 2.31, "PTE7": 2.31,
+    "P12": 3.61, "P13": 3.61, "P21": 3.61, "P23": 3.61, "P24": 3.61, "P31": 3.61, "P33": 3.61, "P34": 3.61,
+    "P37": 3.61, "P39": 3.61, "P40": 3.61, "P43": 3.61, "P45": 3.61, "P46": 3.61, "P49": 3.61, "P106": 3.61, "P107": 3.61,
+    "P3": 6.912, "P4": 6.912, "P6": 6.912, "P7": 6.912, "P9": 6.912, "P10": 6.912, "P14": 6.912, "P15": 6.912,
+    "P16": 6.912, "P17": 6.912, "P19": 6.912, "P20": 6.912, "P22": 6.912, "P32": 6.912, "P35": 6.912, "P38": 6.912,
+    "P41": 6.912, "P44": 6.912, "P47": 6.912, "P50": 6.912, "P51": 6.912, "P53": 6.912, "P54": 6.912, "P103": 6.912, "P104": 6.912,
+    "P1": 8.866, "P25": 8.866, "P101": 8.866,
+    "P2": 13.02, "P5": 13.02, "P8": 13.02, "P11": 13.02,
+    "ELEVADOR 1": 16.08
+};
 
-        window.onload = function() {
-            carregarDados();
-            document.getElementById('modal-concrete-date').value = new Date().toISOString().split('T')[0];
-        };
+window.onload = function() {
+    carregarDados();
+    document.getElementById('modal-concrete-date').value = new Date().toISOString().split('T')[0];
+};
 
-        function ordenarBlocos() {
-            if (!state.blocks) return;
-            state.blocks.sort((a, b) => {
-                // Elevador 1 sempre em destaque no topo (opcional, ou segue ordem alfanumérica pura)
-                if (a.name === 'ELEVADOR 1') return -1;
-                if (b.name === 'ELEVADOR 1') return 1;
-                return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
-            });
-        }
+function ordenarBlocos() {
+    if (!state.blocks) return;
+    state.blocks.sort((a, b) => {
+        if (a.name === 'ELEVADOR 1') return -1;
+        if (b.name === 'ELEVADOR 1') return 1;
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
+}
 
-        function carregarDados() {
-            const localData = localStorage.getItem('estacas_blocos_db');
-            if (localData) {
-                try {
-                    state = JSON.parse(localData);
-                    verificarLiberacaoBlocos();
-                    ordenarBlocos();
-                    renderAll();
-                } catch(e){}
-            }
+function carregarDados() {
+    const localData = localStorage.getItem('estacas_blocos_db');
+    if (localData) {
+        try {
+            state = JSON.parse(localData);
+            verificarLiberacaoBlocos();
+            ordenarBlocos();
+            renderAll();
+        } catch(e){}
+    }
 
-            if (db && db.collection) {
-                db.collection('obras_estacas').doc('projeto_atual').get().then(doc => {
-                    if (doc.exists && doc.data().blocks) {
-                        state.blocks = doc.data().blocks;
-                        verificarLiberacaoBlocos();
-                        ordenarBlocos();
-                        renderAll();
-                        localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
-                    } else if (!localData || state.blocks.length === 0) {
-                        importarRastreioCompleto();
-                    }
-                }).catch(err => {
-                    if (!localData || state.blocks.length === 0) importarRastreioCompleto();
-                });
+    if (db && db.collection) {
+        db.collection('obras_estacas').doc('projeto_atual').get().then(doc => {
+            if (doc.exists && doc.data().blocks) {
+                state.blocks = doc.data().blocks;
+                verificarLiberacaoBlocos();
+                ordenarBlocos();
+                renderAll();
+                localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
             } else if (!localData || state.blocks.length === 0) {
                 importarRastreioCompleto();
             }
+        }).catch(err => {
+            if (!localData || state.blocks.length === 0) importarRastreioCompleto();
+        });
+    } else if (!localData || state.blocks.length === 0) {
+        importarRastreioCompleto();
+    }
+}
+
+function salvarEstado() {
+    ordenarBlocos();
+    localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
+    if (db && db.collection) {
+        db.collection('obras_estacas').doc('projeto_atual').set({
+            blocks: state.blocks,
+            lastUpdated: new Date().toISOString()
+        }, { merge: true }).catch(err => {
+            console.error("Erro ao sincronizar com o Firebase:", err);
+        });
+    }
+    renderAll();
+}
+
+function carregarDadosDemonstracao() {
+    importarRastreioCompleto();
+}
+
+function verificarLiberacaoBlocos() {
+    state.blocks.forEach(block => {
+        const todasEstacasFeitas = block.piles.length > 0 && block.piles.every(p => p.status === 'concluida');
+        if (todasEstacasFeitas) {
+            if (block.status === 'pendente') block.status = 'liberado';
+        } else {
+            if (block.status === 'liberado') block.status = 'pendente';
+        }
+    });
+}
+
+function renderAll() {
+    renderKPIs();
+    renderEstacasTab();
+    renderBlocosTab();
+    
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.id === 'tab-volumes-btn') {
+        renderVolumesTab();
+    }
+    if (document.getElementById('tab-calendario').style.display !== 'none') {
+        renderCalendar();
+    }
+}
+
+function renderKPIs() {
+    let totalEstacas = 0;
+    let estacasConcluidas = 0;
+    let blocosLiberados = 0;
+    let blocosConcretados = 0;
+
+    state.blocks.forEach(b => {
+        if (b.status === 'liberado') blocosLiberados++;
+        if (b.status === 'concretado') {
+            blocosLiberados++;
+            blocosConcretados++;
         }
 
-        function salvarEstado() {
-            ordenarBlocos();
-            localStorage.setItem('estacas_blocos_db', JSON.stringify(state));
-            if (db && db.collection) {
-                db.collection('obras_estacas').doc('projeto_atual').set({
-                    blocks: state.blocks,
-                    lastUpdated: new Date().toISOString()
-                }, { merge: true }).catch(err => {
-                    console.error("Erro ao sincronizar com o Firebase:", err);
-                });
+        b.piles.forEach(p => {
+            totalEstacas++;
+            if (p.status === 'concluida') {
+                estacasConcluidas++;
             }
-            renderAll();
+        });
+    });
+
+    document.getElementById('kpi-estacas-progresso').innerText = `${estacasConcluidas} / ${totalEstacas}`;
+    document.getElementById('kpi-blocos-liberados').innerText = blocosLiberados;
+    document.getElementById('kpi-blocos-concretados').innerText = blocosConcretados;
+}
+
+function renderEstacasTab() {
+    const container = document.getElementById('estacas-blocks-container');
+    container.innerHTML = '';
+
+    state.blocks.forEach(block => {
+        let statusBadge = `<span class="badge badge-pending">PENDENTE</span>`;
+        let cardClass = 'block-card';
+
+        if (block.status === 'liberado') {
+            statusBadge = `<span class="badge badge-released">LIBERADO 🔓</span>`;
+            cardClass += ' released';
+        } else if (block.status === 'concretado') {
+            statusBadge = `<span class="badge badge-concreted">CONCRETADO 🚚</span>`;
+            cardClass += ' concreted';
         }
 
-        function carregarDadosDemonstracao() {
-            importarRastreioCompleto();
-        }
-
-        function verificarLiberacaoBlocos() {
-            state.blocks.forEach(block => {
-                const todasEstacasFeitas = block.piles.length > 0 && block.piles.every(p => p.status === 'concluida');
-                if (todasEstacasFeitas) {
-                    if (block.status === 'pendente') block.status = 'liberado';
-                } else {
-                    if (block.status === 'liberado') block.status = 'pendente';
-                }
-            });
-        }
-
-        function renderAll() {
-            renderKPIs();
-            renderEstacasTab();
-            renderBlocosTab();
-            
-            const activeTab = document.querySelector('.tab-btn.active');
-            if (activeTab && activeTab.id === 'tab-volumes-btn') {
-                renderVolumesTab();
-            }
-            if (document.getElementById('tab-calendario').style.display !== 'none') {
-                renderCalendar();
-            }
-        }
-
-        function renderKPIs() {
-            let totalEstacas = 0;
-            let estacasConcluidas = 0;
-            let blocosLiberados = 0;
-            let blocosConcretados = 0;
-
-            state.blocks.forEach(b => {
-                if (b.status === 'liberado') blocosLiberados++;
-                if (b.status === 'concretado') {
-                    blocosLiberados++;
-                    blocosConcretados++;
-                }
-
-                b.piles.forEach(p => {
-                    totalEstacas++;
-                    if (p.status === 'concluida') {
-                        estacasConcluidas++;
-                    }
-                });
-            });
-
-            document.getElementById('kpi-estacas-progresso').innerText = `${estacasConcluidas} / ${totalEstacas}`;
-            document.getElementById('kpi-blocos-liberados').innerText = blocosLiberados;
-            document.getElementById('kpi-blocos-concretados').innerText = blocosConcretados;
-        }
-
-        function renderEstacasTab() {
-            const container = document.getElementById('estacas-blocks-container');
-            container.innerHTML = '';
-
-            state.blocks.forEach(block => {
-                let statusBadge = `<span class="badge badge-pending">PENDENTE</span>`;
-                let cardClass = 'block-card';
-
-                if (block.status === 'liberado') {
-                    statusBadge = `<span class="badge badge-released">LIBERADO 🔓</span>`;
-                    cardClass += ' released';
-                } else if (block.status === 'concretado') {
-                    statusBadge = `<span class="badge badge-concreted">CONCRETADO 🚚</span>`;
-                    cardClass += ' concreted';
-                }
-
-                let pilesHTML = block.piles.map(p => {
-                    let isDone = p.status === 'concluida';
-                    return `
-                        <div class="pile-btn ${isDone ? 'done' : ''}" onclick="togglePileStatus('${block.id}', '${p.id}')">
-                            ${p.code} ${isDone ? '✓' : ''}
-                        </div>
-                    `;
-                }).join('');
-
-                container.innerHTML += `
-                    <div class="${cardClass}">
-                        <div class="block-header">
-                            <span>${block.name}</span>
-                            ${statusBadge}
-                        </div>
-                        <div style="font-size:0.75rem; color:#64748b;">Estacas: ${block.piles.length} | Vol Bloco: ${block.volumeBloco} m³</div>
-                        <div class="pile-list">
-                            ${pilesHTML}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderVolumesTab() {
-            const tbody = document.getElementById('table-volumes-body');
-            tbody.innerHTML = '';
-            let rowsHTML = '';
-
-            state.blocks.forEach(b => {
-                b.piles.forEach(p => {
-                    rowsHTML += `
-                        <tr>
-                            <td><strong>${b.name}</strong></td>
-                            <td>${p.code}</td>
-                            <td><span class="badge ${p.status === 'concluida' ? 'badge-released' : 'badge-pending'}">${p.status.toUpperCase()}</span></td>
-                            <td>
-                                <input type="date" value="${p.dateDone || ''}" style="width:145px;" onchange="updatePileDate('${b.id}', '${p.id}', this.value)">
-                            </td>
-                            <td>
-                                <input type="number" step="0.05" value="${p.volume || 0}" style="width:100px;" onchange="updatePileVolume('${b.id}', '${p.id}', this.value)">
-                            </td>
-                        </tr>
-                    `;
-                });
-            });
-            tbody.innerHTML = rowsHTML || `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhuma estaca cadastrada.</td></tr>`;
-        }
-
-        function togglePileStatus(blockId, pileId) {
-            const block = state.blocks.find(b => b.id === blockId);
-            if (!block) return;
-            const pile = block.piles.find(p => p.id === pileId);
-            if (!pile) return;
-
-            if (pile.status === 'concluida') {
-                pile.status = 'pendente';
-                pile.dateDone = null;
-            } else {
-                pile.status = 'concluida';
-                pile.dateDone = new Date().toISOString().split('T')[0];
-            }
-
-            verificarLiberacaoBlocos();
-            salvarEstado();
-        }
-
-        function updatePileDate(blockId, pileId, val) {
-            const block = state.blocks.find(b => b.id === blockId);
-            if (!block) return;
-            const pile = block.piles.find(p => p.id === pileId);
-            if (pile) {
-                pile.dateDone = val || null;
-                if (val && pile.status !== 'concluida') {
-                    pile.status = 'concluida';
-                } else if (!val && pile.status === 'concluida') {
-                    pile.status = 'pendente';
-                }
-                verificarLiberacaoBlocos();
-                salvarEstado();
-            }
-        }
-
-        function updatePileVolume(blockId, pileId, val) {
-            const block = state.blocks.find(b => b.id === blockId);
-            if (!block) return;
-            const pile = block.piles.find(p => p.id === pileId);
-            if (pile) {
-                pile.volume = parseFloat(val) || 0;
-                salvarEstado();
-            }
-        }
-
-        function renderBlocosTab() {
-            const tbody = document.getElementById('table-released-blocks-body');
-            tbody.innerHTML = '';
-
-            const releasedBlocks = state.blocks.filter(b => b.status === 'liberado' || b.status === 'concretado');
-
-            if (releasedBlocks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:15px;">Nenhum bloco liberado ainda. Conclua todas as estacas de um bloco para liberá-lo.</td></tr>`;
-                return;
-            }
-
-            releasedBlocks.forEach(b => {
-                let isConcreted = b.status === 'concretado';
-                tbody.innerHTML += `
-                    <tr>
-                        <td><input type="checkbox" class="chk-block-select" value="${b.id}"></td>
-                        <td><strong>${b.name}</strong></td>
-                        <td>${b.piles.length} estacas</td>
-                        <td><span class="badge ${isConcreted ? 'badge-concreted' : 'badge-released'}">${isConcreted ? 'CONCRETADO 🚚' : 'LIBERADO 🔓'}</span></td>
-                        <td>${b.volumeBloco} m³</td>
-                        <td>${b.concreteDate || '-'}</td>
-                        <td>
-                            <input type="text" value="${b.nfNumber || ''}" placeholder="Informa NF" style="padding:4px;" onchange="updateBlockNF('${b.id}', this.value)">
-                        </td>
-                        <td>
-                            ${!isConcreted ? `<button style="padding:4px 8px; font-size:0.75rem; background:var(--success); color:white; border:none; border-radius:4px; cursor:pointer;" onclick="marcarBlocoConcretadoDireto('${b.id}')">Concretar</button>` : `<span style="font-size:0.75rem; color:var(--success); font-weight:bold;">Concluído ✓</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function updateBlockNF(blockId, val) {
-            const block = state.blocks.find(b => b.id === blockId);
-            if (block) {
-                block.nfNumber = val;
-                salvarEstado();
-            }
-        }
-
-        function toggleSelectAllReleased(chk) {
-            document.querySelectorAll('.chk-block-select').forEach(c => c.checked = chk.checked);
-        }
-
-        function abrirModalConcretagemBatch() {
-            const selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
-            if (selected.length === 0) {
-                alert("Selecione pelo menos um bloco liberado na tabela.");
-                return;
-            }
-
-            let totalVol = 0;
-            let names = [];
-
-            selected.forEach(id => {
-                let b = state.blocks.find(x => x.id === id);
-                if (b) {
-                    names.push(b.name);
-                    totalVol += parseFloat(b.volumeBloco || 0);
-                }
-            });
-
-            document.getElementById('modal-selected-blocks-summary').innerHTML = `
-                <strong>Blocos Selecionados (${selected.length}):</strong> ${names.join(', ')}<br>
-                <strong>Volume Total Estimado:</strong> ${totalVol.toFixed(2)} m³
+        let pilesHTML = block.piles.map(p => {
+            let isDone = p.status === 'concluida';
+            return `
+                <div class="pile-btn ${isDone ? 'done' : ''}" onclick="togglePileStatus('${block.id}', '${p.id}')">
+                    ${p.code} ${isDone ? '✓' : ''}
+                </div>
             `;
+        }).join('');
 
-            document.getElementById('modal-concretagem').style.display = 'flex';
+        container.innerHTML += `
+            <div class="${cardClass}">
+                <div class="block-header">
+                    <span>${block.name}</span>
+                    ${statusBadge}
+                </div>
+                <div style="font-size:0.75rem; color:#64748b;">Estacas: ${block.piles.length} | Vol Bloco: ${block.volumeBloco} m³</div>
+                <div class="pile-list">
+                    ${pilesHTML}
+                </div>
+            </div>
+        `;
+    });
+}
+
+function renderVolumesTab() {
+    const tbody = document.getElementById('table-volumes-body');
+    tbody.innerHTML = '';
+    let rowsHTML = '';
+
+    state.blocks.forEach(b => {
+        b.piles.forEach(p => {
+            rowsHTML += `
+                <tr>
+                    <td><strong>${b.name}</strong></td>
+                    <td>${p.code}</td>
+                    <td><span class="badge ${p.status === 'concluida' ? 'badge-released' : 'badge-pending'}">${p.status.toUpperCase()}</span></td>
+                    <td>
+                        <input type="date" value="${p.dateDone || ''}" style="width:145px;" onchange="updatePileDate('${b.id}', '${p.id}', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" step="0.05" value="${p.volume || 0}" style="width:100px;" onchange="updatePileVolume('${b.id}', '${p.id}', this.value)">
+                    </td>
+                </tr>
+            `;
+        });
+    });
+    tbody.innerHTML = rowsHTML || `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Nenhuma estaca cadastrada.</td></tr>`;
+}
+
+function togglePileStatus(blockId, pileId) {
+    const block = state.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    const pile = block.piles.find(p => p.id === pileId);
+    if (!pile) return;
+
+    if (pile.status === 'concluida') {
+        pile.status = 'pendente';
+        pile.dateDone = null;
+    } else {
+        pile.status = 'concluida';
+        pile.dateDone = new Date().toISOString().split('T')[0];
+    }
+
+    verificarLiberacaoBlocos();
+    salvarEstado();
+}
+
+function updatePileDate(blockId, pileId, val) {
+    const block = state.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    const pile = block.piles.find(p => p.id === pileId);
+    if (pile) {
+        pile.dateDone = val || null;
+        if (val && pile.status !== 'concluida') {
+            pile.status = 'concluida';
+        } else if (!val && pile.status === 'concluida') {
+            pile.status = 'pendente';
+        }
+        verificarLiberacaoBlocos();
+        salvarEstado();
+    }
+}
+
+function updatePileVolume(blockId, pileId, val) {
+    const block = state.blocks.find(b => b.id === blockId);
+    if (!block) return;
+    const pile = block.piles.find(p => p.id === pileId);
+    if (pile) {
+        pile.volume = parseFloat(val) || 0;
+        salvarEstado();
+    }
+}
+
+function renderBlocosTab() {
+    const tbody = document.getElementById('table-released-blocks-body');
+    tbody.innerHTML = '';
+
+    const releasedBlocks = state.blocks.filter(b => b.status === 'liberado' || b.status === 'concretado');
+
+    if (releasedBlocks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8; padding:15px;">Nenhum bloco liberado ainda. Conclua todas as estacas de um bloco para liberá-lo.</td></tr>`;
+        return;
+    }
+
+    releasedBlocks.forEach(b => {
+        let isConcreted = b.status === 'concretado';
+        tbody.innerHTML += `
+            <tr>
+                <td><input type="checkbox" class="chk-block-select" value="${b.id}"></td>
+                <td><strong>${b.name}</strong></td>
+                <td>${b.piles.length} estacas</td>
+                <td><span class="badge ${isConcreted ? 'badge-concreted' : 'badge-released'}">${isConcreted ? 'CONCRETADO 🚚' : 'LIBERADO 🔓'}</span></td>
+                <td>${b.volumeBloco} m³</td>
+                <td>${b.concreteDate || '-'}</td>
+                <td>
+                    <input type="text" value="${b.nfNumber || ''}" placeholder="Informa NF" style="padding:4px;" onchange="updateBlockNF('${b.id}', this.value)">
+                </td>
+                <td>
+                    ${!isConcreted ? `<button style="padding:4px 8px; font-size:0.75rem; background:var(--success); color:white; border:none; border-radius:4px; cursor:pointer;" onclick="marcarBlocoConcretadoDireto('${b.id}')">Concretar</button>` : `<span style="font-size:0.75rem; color:var(--success); font-weight:bold;">Concluído ✓</span>`}
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function updateBlockNF(blockId, val) {
+    const block = state.blocks.find(b => b.id === blockId);
+    if (block) {
+        block.nfNumber = val;
+        salvarEstado();
+    }
+}
+
+function toggleSelectAllReleased(chk) {
+    document.querySelectorAll('.chk-block-select').forEach(c => c.checked = chk.checked);
+}
+
+function abrirModalConcretagemBatch() {
+    const selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
+    if (selected.length === 0) {
+        alert("Selecione pelo menos um bloco liberado na tabela.");
+        return;
+    }
+
+    let totalVol = 0;
+    let names = [];
+
+    selected.forEach(id => {
+        let b = state.blocks.find(x => x.id === id);
+        if (b) {
+            names.push(b.name);
+            totalVol += parseFloat(b.volumeBloco || 0);
+        }
+    });
+
+    document.getElementById('modal-selected-blocks-summary').innerHTML = `
+        <strong>Blocos Selecionados (${selected.length}):</strong> ${names.join(', ')}<br>
+        <strong>Volume Total Estimado:</strong> ${totalVol.toFixed(2)} m³
+    `;
+
+    document.getElementById('modal-concretagem').style.display = 'flex';
+}
+
+function salvarConcretagemBatch() {
+    const selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
+    const dateVal = document.getElementById('modal-concrete-date').value;
+    const nfVal = document.getElementById('modal-concrete-nf').value;
+
+    if (!dateVal) { alert("Selecione a data da concretagem."); return; }
+
+    selected.forEach(id => {
+        let b = state.blocks.find(x => x.id === id);
+        if (b) {
+            b.status = 'concretado';
+            b.concreteDate = dateVal;
+            if (nfVal) b.nfNumber = nfVal;
+        }
+    });
+
+    salvarEstado();
+    document.getElementById('modal-concretagem').style.display = 'none';
+    alert("Concretagem de blocos registrada com sucesso!");
+}
+
+function marcarBlocoConcretadoDireto(blockId) {
+    const block = state.blocks.find(b => b.id === blockId);
+    if (block) {
+        block.status = 'concretado';
+        block.concreteDate = new Date().toISOString().split('T')[0];
+        salvarEstado();
+    }
+}
+
+function gerarRelatorioWhatsappEstacas() {
+    let totalEstacas = 0;
+    let executadas = 0;
+    let hoje = new Date().toISOString().split('T')[0];
+    let executadasHoje = 0;
+    let qtdBlocosLiberados = 0;
+
+    state.blocks.forEach(b => {
+        if (b.status === 'liberado' || b.status === 'concretado') {
+            qtdBlocosLiberados++;
         }
 
-        function salvarConcretagemBatch() {
-            const selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
-            const dateVal = document.getElementById('modal-concrete-date').value;
-            const nfVal = document.getElementById('modal-concrete-nf').value;
+        b.piles.forEach(p => {
+            totalEstacas++;
+            if (p.status === 'concluida') {
+                executadas++;
+                if (p.dateDone === hoje) executadasHoje++;
+            }
+        });
+    });
 
-            if (!dateVal) { alert("Selecione a data da concretagem."); return; }
+    let percentualGeral = totalEstacas > 0 ? ((executadas / totalEstacas) * 100).toFixed(1) : 0;
 
-            selected.forEach(id => {
-                let b = state.blocks.find(x => x.id === id);
-                if (b) {
-                    b.status = 'concretado';
-                    b.concreteDate = dateVal;
-                    if (nfVal) b.nfNumber = nfVal;
+    let txt = `*📊 RELATÓRIO DIÁRIO DE ESTACAS & FUNDAÇÕES*\n`;
+    txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+    txt += `🏗️ *Progresso de Estacas:*\n`;
+    txt += `• Concluídas Hoje: ${executadasHoje}\n`;
+    txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${percentualGeral}%)\n\n`;
+    txt += `🧱 *Blocos Liberados:*\n`;
+    txt += `• Total: ${qtdBlocosLiberados} bloco(s)\n`;
+
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+function gerarRelatorioWhatsappBlocos() {
+    let selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
+    let list = selected.length > 0 ? state.blocks.filter(b => selected.includes(b.id)) : state.blocks.filter(b => b.status === 'liberado' || b.status === 'concretado');
+
+    if (list.length === 0) { alert('Nenhum bloco liberado/selecionado.'); return; }
+
+    let totalVol = 0;
+    let txt = `*🚛 RELATÓRIO DE CONCRETAGEM DE BLOCOS*\n`;
+    txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+    txt += `*Blocos Programados / Concretados:*\n`;
+
+    list.forEach(b => {
+        let vol = parseFloat(b.volumeBloco || 0);
+        totalVol += vol;
+        txt += `• *${b.name}* (${b.piles.length} estacas) - Vol: ${vol}m³ | Status: ${b.status.toUpperCase()} ${b.nfNumber ? '| NF: '+b.nfNumber : ''}\n`;
+    });
+
+    txt += `\n📊 *Volume Total de Concreto:* ${totalVol.toFixed(2)} m³`;
+
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+function gerarRelatorioGeralCompleto() {
+    let totalEstacas = 0;
+    let estacasConcluidas = 0;
+    let blocosConcretados = 0;
+    let blocosLiberados = 0;
+    let nomesBlocosLiberados = [];
+    let historicoPorData = {};
+
+    state.blocks.forEach(b => {
+        if (b.status === 'concretado') {
+            blocosConcretados++;
+            blocosLiberados++;
+            nomesBlocosLiberados.push(b.name);
+        } else if (b.status === 'liberado') {
+            blocosLiberados++;
+            nomesBlocosLiberados.push(b.name);
+        }
+
+        b.piles.forEach(p => {
+            totalEstacas++;
+            if (p.status === 'concluida') {
+                estacasConcluidas++;
+                let dataExec = p.dateDone || 'Data não informada';
+                if (!historicoPorData[dataExec]) {
+                    historicoPorData[dataExec] = { count: 0, estacas: [] };
                 }
-            });
-
-            salvarEstado();
-            document.getElementById('modal-concretagem').style.display = 'none';
-            alert("Concretagem de blocos registrada com sucesso!");
-        }
-
-        function marcarBlocoConcretadoDireto(blockId) {
-            const block = state.blocks.find(b => b.id === blockId);
-            if (block) {
-                block.status = 'concretado';
-                block.concreteDate = new Date().toISOString().split('T')[0];
-                salvarEstado();
+                historicoPorData[dataExec].count++;
+                historicoPorData[dataExec].estacas.push(`${b.name} (${p.code})`);
             }
+        });
+    });
+
+    let percentualGeral = totalEstacas > 0 ? ((estacasConcluidas / totalEstacas) * 100).toFixed(1) : 0;
+
+    let txt = `📋 *RELATÓRIO GERAL DE EXECUTADOS & FUNDAÇÕES*\n`;
+    txt += `📅 Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}\n\n`;
+    
+    txt += `📈 *RESUMO EXECUTIVO:*\n`;
+    txt += `• Progresso de Estacas: *${estacasConcluidas}/${totalEstacas}* (${percentualGeral}%)\n`;
+    txt += `• Blocos Liberados (${blocosLiberados}):\n`;
+    txt += `  ${nomesBlocosLiberados.length > 0 ? nomesBlocosLiberados.join(', ') : 'Nenhum'}\n`;
+    txt += `• Blocos Concretados: ${blocosConcretados}\n\n`;
+
+    txt += `📅 *HISTÓRICO DE EXECUÇÃO POR DATA:*\n`;
+    let datasOrdenadas = Object.keys(historicoPorData).sort().reverse();
+    
+    datasOrdenadas.forEach(data => {
+        let info = historicoPorData[data];
+        let dataFormatada = data.includes('-') ? data.split('-').reverse().join('/') : data;
+        txt += `\n🔹 *${dataFormatada}*: ${info.count} estaca(s)\n`;
+        txt += `   Estacas: ${info.estacas.join(', ')}\n`;
+    });
+
+    if (confirm("Deseja enviar este Relatório Completo via WhatsApp? (Clique em Cancelar para apenas ler na tela)")) {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+    } else {
+        let relWindow = window.open('', '_blank');
+        relWindow.document.write(`
+            <html>
+                <head><title>Relatório Geral de Obras</title></head>
+                <body style="font-family: Arial, sans-serif; padding: 20px; white-space: pre-wrap; background: #f4f4f9; color: #333;">
+                    <h2>Relatório Geral de Fundações e Estacas</h2>
+                    <hr>
+                    ${txt.replace(/\*/g, '<b>').replace(/\n/g, '<br>')}
+                </body>
+            </html>
+        `);
+    }
+}
+
+function renderCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
+
+    let events = [];
+    let pileEventsByDate = {};
+    let blockEventsByDate = {};
+
+    state.blocks.forEach(b => {
+        if (b.status === 'concretado' && b.concreteDate) {
+            if (!blockEventsByDate[b.concreteDate]) blockEventsByDate[b.concreteDate] = [];
+            blockEventsByDate[b.concreteDate].push(b);
         }
 
-        function gerarRelatorioWhatsappEstacas() {
-            let totalEstacas = 0;
-            let executadas = 0;
-            let hoje = new Date().toISOString().split('T')[0];
-            let executadasHoje = 0;
-            let qtdBlocosLiberados = 0;
-
-            state.blocks.forEach(b => {
-                if (b.status === 'liberado' || b.status === 'concretado') {
-                    qtdBlocosLiberados++;
-                }
-
-                b.piles.forEach(p => {
-                    totalEstacas++;
-                    if (p.status === 'concluida') {
-                        executadas++;
-                        if (p.dateDone === hoje) executadasHoje++;
-                    }
-                });
-            });
-
-            let percentualGeral = totalEstacas > 0 ? ((executadas / totalEstacas) * 100).toFixed(1) : 0;
-
-            let txt = `*📊 RELATÓRIO DIÁRIO DE ESTACAS & FUNDAÇÕES*\n`;
-            txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
-            txt += `🏗️ *Progresso de Estacas:*\n`;
-            txt += `• Concluídas Hoje: ${executadasHoje}\n`;
-            txt += `• Acumulado Geral: ${executadas}/${totalEstacas} (${percentualGeral}%)\n\n`;
-            txt += `🧱 *Blocos Liberados:*\n`;
-            txt += `• Total: ${qtdBlocosLiberados} bloco(s)\n`;
-
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
-        }
-
-        function gerarRelatorioWhatsappBlocos() {
-            let selected = Array.from(document.querySelectorAll('.chk-block-select:checked')).map(c => c.value);
-            let list = selected.length > 0 ? state.blocks.filter(b => selected.includes(b.id)) : state.blocks.filter(b => b.status === 'liberado' || b.status === 'concretado');
-
-            if (list.length === 0) { alert('Nenhum bloco liberado/selecionado.'); return; }
-
-            let totalVol = 0;
-            let txt = `*🚛 RELATÓRIO DE CONCRETAGEM DE BLOCOS*\n`;
-            txt += `📅 Data: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
-            txt += `*Blocos Programados / Concretados:*\n`;
-
-            list.forEach(b => {
-                let vol = parseFloat(b.volumeBloco || 0);
-                totalVol += vol;
-                txt += `• *${b.name}* (${b.piles.length} estacas) - Vol: ${vol}m³ | Status: ${b.status.toUpperCase()} ${b.nfNumber ? '| NF: '+b.nfNumber : ''}\n`;
-            });
-
-            txt += `\n📊 *Volume Total de Concreto:* ${totalVol.toFixed(2)} m³`;
-
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
-        }
-
-        function gerarRelatorioGeralCompleto() {
-            let totalEstacas = 0;
-            let estacasConcluidas = 0;
-            let blocosConcretados = 0;
-            let blocosLiberados = 0;
-            let nomesBlocosLiberados = [];
-            let historicoPorData = {};
-
-            state.blocks.forEach(b => {
-                if (b.status === 'concretado') {
-                    blocosConcretados++;
-                    blocosLiberados++;
-                    nomesBlocosLiberados.push(b.name);
-                } else if (b.status === 'liberado') {
-                    blocosLiberados++;
-                    nomesBlocosLiberados.push(b.name);
-                }
-
-                b.piles.forEach(p => {
-                    totalEstacas++;
-                    if (p.status === 'concluida') {
-                        estacasConcluidas++;
-                        let dataExec = p.dateDone || 'Data não informada';
-                        if (!historicoPorData[dataExec]) {
-                            historicoPorData[dataExec] = { count: 0, estacas: [] };
-                        }
-                        historicoPorData[dataExec].count++;
-                        historicoPorData[dataExec].estacas.push(`${b.name} (${p.code})`);
-                    }
-                });
-            });
-
-            let percentualGeral = totalEstacas > 0 ? ((estacasConcluidas / totalEstacas) * 100).toFixed(1) : 0;
-
-            let txt = `📋 *RELATÓRIO GERAL DE EXECUTADOS & FUNDAÇÕES*\n`;
-            txt += `📅 Emitido em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}\n\n`;
-            
-            txt += `📈 *RESUMO EXECUTIVO:*\n`;
-            txt += `• Progresso de Estacas: *${estacasConcluidas}/${totalEstacas}* (${percentualGeral}%)\n`;
-            txt += `• Blocos Liberados (${blocosLiberados}):\n`;
-            txt += `  ${nomesBlocosLiberados.length > 0 ? nomesBlocosLiberados.join(', ') : 'Nenhum'}\n`;
-            txt += `• Blocos Concretados: ${blocosConcretados}\n\n`;
-
-            txt += `📅 *HISTÓRICO DE EXECUÇÃO POR DATA:*\n`;
-            let datasOrdenadas = Object.keys(historicoPorData).sort().reverse();
-            
-            datasOrdenadas.forEach(data => {
-                let info = historicoPorData[data];
-                let dataFormatada = data.includes('-') ? data.split('-').reverse().join('/') : data;
-                txt += `\n🔹 *${dataFormatada}*: ${info.count} estaca(s)\n`;
-                txt += `   Estacas: ${info.estacas.join(', ')}\n`;
-            });
-
-            if (confirm("Deseja enviar este Relatório Completo via WhatsApp? (Clique em Cancelar para apenas ler na tela)")) {
-                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
-            } else {
-                let relWindow = window.open('', '_blank');
-                relWindow.document.write(`
-                    <html>
-                        <head><title>Relatório Geral de Obras</title></head>
-                        <body style="font-family: Arial, sans-serif; padding: 20px; white-space: pre-wrap; background: #f4f4f9; color: #333;">
-                            <h2>Relatório Geral de Fundações e Estacas</h2>
-                            <hr>
-                            ${txt.replace(/\*/g, '<b>').replace(/\n/g, '<br>')}
-                        </body>
-                    </html>
-                `);
+        b.piles.forEach(p => {
+            if (p.status === 'concluida' && p.dateDone) {
+                if (!pileEventsByDate[p.dateDone]) pileEventsByDate[p.dateDone] = 0;
+                pileEventsByDate[p.dateDone]++;
             }
+        });
+    });
+
+    Object.keys(pileEventsByDate).forEach(d => {
+        events.push({
+            title: `🚜 ${pileEventsByDate[d]} estacas`,
+            start: d,
+            backgroundColor: '#0891b2',
+            borderColor: '#0891b2'
+        });
+    });
+
+    Object.keys(blockEventsByDate).forEach(d => {
+        let blocosList = blockEventsByDate[d];
+        events.push({
+            title: `🧱 ${blocosList.length} bloco(s) concretados`,
+            start: d,
+            backgroundColor: '#16a34a',
+            borderColor: '#16a34a'
+        });
+    });
+
+    if (!calendarInstance) {
+        calendarInstance = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            events: events,
+            eventClick: function(info) {
+                exibirDetalhesDia(info.event.startStr);
+            },
+            dateClick: function(info) {
+                exibirDetalhesDia(info.dateStr);
+            }
+        });
+        calendarInstance.render();
+    } else {
+        calendarInstance.removeAllEvents();
+        calendarInstance.addEventSource(events);
+        calendarInstance.render();
+    }
+}
+
+function exibirDetalhesDia(dateStr) {
+    const detailsEl = document.getElementById('calendar-day-details');
+    let estacasFeitas = [];
+    let blocosConcretados = [];
+
+    state.blocks.forEach(b => {
+        if (b.status === 'concretado' && b.concreteDate === dateStr) {
+            blocosConcretados.push(b);
+        }
+        b.piles.forEach(p => {
+            if (p.status === 'concluida' && p.dateDone === dateStr) {
+                estacasFeitas.push({ blockName: b.name, pileCode: p.code });
+            }
+        });
+    });
+
+    let html = `<h4>Data: ${dateStr.split('-').reverse().join('/')}</h4><br>`;
+
+    html += `<strong>🚜 Estacas Executadas (${estacasFeitas.length}):</strong><br>`;
+    if (estacasFeitas.length > 0) {
+        html += `<ul style="margin-left:15px; margin-bottom:10px;">`;
+        estacasFeitas.forEach(e => html += `<li>Bloco ${e.blockName} - Estaca ${e.pileCode}</li>`);
+        html += `</ul>`;
+    } else {
+        html += `<p style="color:#94a3b8;">Nenhuma estaca concluída nesta data.</p><br>`;
+    }
+
+    html += `<strong>🧱 Blocos Concretados (${blocosConcretados.length}):</strong><br>`;
+    if (blocosConcretados.length > 0) {
+        let porQtdEstacas = {};
+        blocosConcretados.forEach(b => {
+            let qtd = b.piles.length;
+            if (!porQtdEstacas[qtd]) porQtdEstacas[qtd] = [];
+            porQtdEstacas[qtd].push(b.name);
+        });
+
+        html += `<ul style="margin-left:15px;">`;
+        Object.keys(porQtdEstacas).forEach(q => {
+            html += `<li><strong>Blocos com ${q} estacas:</strong> ${porQtdEstacas[q].join(', ')}</li>`;
+        });
+        html += `</ul>`;
+    } else {
+        html += `<p style="color:#94a3b8;">Nenhum bloco concretado nesta data.</p>`;
+    }
+
+    detailsEl.innerHTML = html;
+}
+
+function adicionarNovoBloco() {
+    const name = document.getElementById('new-block-name').value.trim().toUpperCase();
+    const count = parseInt(document.getElementById('new-block-piles-count').value) || 1;
+    const pileVol = parseFloat(document.getElementById('new-pile-vol').value) || 0;
+    const blockVol = parseFloat(document.getElementById('new-block-vol').value) || 0;
+
+    if (!name) { alert("Informe o nome do bloco."); return; }
+
+    let piles = [];
+    for (let i = 1; i <= count; i++) {
+        piles.push({
+            id: `${name}-E${i}`,
+            code: `E${i}`,
+            status: 'pendente',
+            volume: pileVol,
+            dateDone: null
+        });
+    }
+
+    state.blocks.push({
+        id: name,
+        name: name,
+        status: 'pendente',
+        volumeBloco: blockVol.toFixed(2),
+        piles: piles,
+        concreteDate: null,
+        nfNumber: ''
+    });
+
+    salvarEstado();
+    alert(`Bloco ${name} cadastrado com sucesso!`);
+    document.getElementById('new-block-name').value = '';
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(`tab-${tab}-btn`).classList.add('active');
+
+    ['estacas', 'blocos', 'calendario', 'volumes', 'cadastros'].forEach(t => {
+        document.getElementById(`tab-${t}`).style.display = (t === tab) ? 'block' : 'none';
+    });
+
+    if (tab === 'volumes') {
+        renderVolumesTab();
+    }
+    if (tab === 'calendario') {
+        setTimeout(() => renderCalendar(), 100);
+    }
+}
+
+function importarRastreioCompleto() {
+    const estruturaBlocos = [
+        {"pilar": "ELEVADOR 1", "estacas": ["E-145", "E-146", "E-147", "E-148", "E-149", "E-150", "E-151", "E-152", "E-153", "E-154", "E-155", "E-156", "E-157", "E-158"]},
+        {"pilar": "PE1", "estacas": ["E-107", "E-108"]},
+        {"pilar": "PR1", "estacas": ["E-1", "E-2"]},
+        {"pilar": "P18", "estacas": ["E-119", "E-120", "E-121"]},
+        {"pilar": "P26", "estacas": ["E-169", "E-170", "E-171"]},
+        {"pilar": "P36", "estacas": ["E-194", "E-195", "E-196"]},
+        {"pilar": "P42", "estacas": ["E-227", "E-228", "E-229"]},
+        {"pilar": "P48", "estacas": ["E-259", "E-260", "E-261"]},
+        {"pilar": "P52", "estacas": ["E-293", "E-294", "E-295"]},
+        {"pilar": "P102", "estacas": ["E-69", "E-70", "E-71"]},
+        {"pilar": "P105", "estacas": ["E-202", "E-203", "E-204"]},
+        {"pilar": "PTE1", "estacas": ["E-50", "E-51", "E-52"]},
+        {"pilar": "PTE2", "estacas": ["E-47", "E-48", "E-49"]},
+        {"pilar": "PTE3", "estacas": ["E-230", "E-231", "E-232"]},
+        {"pilar": "PTE4", "estacas": ["E-262", "E-263", "E-264"]},
+        {"pilar": "PTE5", "estacas": ["E-299", "E-300", "E-301"]},
+        {"pilar": "PTE6", "estacas": ["E-296", "E-297", "E-298"]},
+        {"pilar": "PTE7", "estacas": ["E-44", "E-45", "E-46"]},
+        {"pilar": "P12", "estacas": ["E-89", "E-90", "E-91", "E-92"]},
+        {"pilar": "P13", "estacas": ["E-93", "E-94", "E-95", "E-96"]},
+        {"pilar": "P21", "estacas": ["E-132", "E-133", "E-134", "E-135"]},
+        {"pilar": "P23", "estacas": ["E-141", "E-142", "E-143", "E-144"]},
+        {"pilar": "P24", "estacas": ["E-159", "E-160", "E-161", "E-162"]},
+        {"pilar": "P31", "estacas": ["E-172", "E-173", "E-174", "E-175"]},
+        {"pilar": "P33", "estacas": ["E-181", "E-182", "E-183", "E-184"]},
+        {"pilar": "P34", "estacas": ["E-185", "E-186", "E-187", "E-188"]},
+        {"pilar": "P37", "estacas": ["E-205", "E-206", "E-207", "E-208"]},
+        {"pilar": "P39", "estacas": ["E-214", "E-215", "E-216", "E-217"]},
+        {"pilar": "P40", "estacas": ["E-218", "E-219", "E-220", "E-221"]},
+        {"pilar": "P43", "estacas": ["E-233", "E-234", "E-235", "E-236"]},
+        {"pilar": "P45", "estacas": ["E-242", "E-243", "E-244", "E-245"]},
+        {"pilar": "P46", "estacas": ["E-250", "E-251", "E-252", "E-253"]},
+        {"pilar": "P49", "estacas": ["E-265", "E-266", "E-267", "E-268"]},
+        {"pilar": "P106", "estacas": ["E-246", "E-247", "E-248", "E-249"]},
+        {"pilar": "P107", "estacas": ["E-279", "E-280", "E-281", "E-282"]},
+        {"pilar": "P3", "estacas": ["E-16", "E-17", "E-18", "E-19", "E-20"]},
+        {"pilar": "P4", "estacas": ["E-27", "E-28", "E-29", "E-30", "E-31"]},
+        {"pilar": "P6", "estacas": ["E-39", "E-40", "E-41", "E-42", "E-43"]},
+        {"pilar": "P7", "estacas": ["E-53", "E-54", "E-55", "E-56", "E-57"]},
+        {"pilar": "P9", "estacas": ["E-65", "E-66", "E-67", "E-68", "E-69"]},
+        {"pilar": "P10", "estacas": ["E-77", "E-78", "E-79", "E-80", "E-81"]},
+        {"pilar": "P14", "estacas": ["E-97", "E-98", "E-99", "E-100", "E-101"]},
+        {"pilar": "P15", "estacas": ["E-102", "E-103", "E-104", "E-105", "E-106"]},
+        {"pilar": "P16", "estacas": ["E-109", "E-110", "E-111", "E-112", "E-113"]},
+        {"pilar": "P17", "estacas": ["E-114", "E-115", "E-116", "E-117", "E-118"]},
+        {"pilar": "P19", "estacas": ["E-122", "E-123", "E-124", "E-125", "E-126"]},
+        {"pilar": "P20", "estacas": ["E-127", "E-128", "E-129", "E-130", "E-131"]},
+        {"pilar": "P22", "estacas": ["E-136", "E-137", "E-138", "E-139", "E-140"]},
+        {"pilar": "P32", "estacas": ["E-176", "E-177", "E-178", "E-179", "E-180"]},
+        {"pilar": "P35", "estacas": ["E-189", "E-190", "E-191", "E-192", "E-193"]},
+        {"pilar": "P38", "estacas": ["E-209", "E-210", "E-211", "E-212", "E-213"]},
+        {"pilar": "P41", "estacas": ["E-222", "E-223", "E-224", "E-225", "E-226"]},
+        {"pilar": "P44", "estacas": ["E-237", "E-238", "E-239", "E-240", "E-241"]},
+        {"pilar": "P47", "estacas": ["E-254", "E-255", "E-256", "E-257", "E-258"]},
+        {"pilar": "P50", "estacas": ["E-274", "E-275", "E-276", "E-277", "E-278"]},
+        {"pilar": "P51", "estacas": ["E-283", "E-284", "E-285", "E-286", "E-287"]},
+        {"pilar": "P53", "estacas": ["E-269", "E-270", "E-271", "E-272", "E-273"]},
+        {"pilar": "P54", "estacas": ["E-288", "E-289", "E-290", "E-291", "E-292"]},
+        {"pilar": "P103", "estacas": ["E-72", "E-73", "E-74", "E-75", "E-76"]},
+        {"pilar": "P104", "estacas": ["E-197", "E-198", "E-199", "E-200", "E-201"]},
+        {"pilar": "P1", "estacas": ["E-3", "E-4", "E-5", "E-6", "E-7", "E-8"]},
+        {"pilar": "P25", "estacas": ["E-163", "E-164", "E-165", "E-166", "E-167", "E-168"]},
+        {"pilar": "P101", "estacas": ["E-21", "E-22", "E-23", "E-24", "E-25", "E-26"]},
+        {"pilar": "P2", "estacas": ["E-9", "E-10", "E-11", "E-12", "E-13", "E-14", "E-15"]},
+        {"pilar": "P5", "estacas": ["E-32", "E-33", "E-34", "E-35", "E-36", "E-37", "E-38"]},
+        {"pilar": "P8", "estacas": ["E-58", "E-59", "E-60", "E-61", "E-62", "E-63", "E-64"]},
+        {"pilar": "P11", "estacas": ["E-82", "E-83", "E-84", "E-85", "E-86", "E-87", "E-88"]}
+    ];
+
+    const dadosExecucao = [
+        {"id": "E-281", "date": "2026-06-18", "volume": 1.92},
+        {"id": "E-249", "date": "2026-06-18", "volume": 2.12},
+        {"id": "E-299", "date": "2026-06-18", "volume": 2.04},
+        {"id": "E-264", "date": "2026-06-18", "volume": 2.15},
+        {"id": "E-232", "date": "2026-06-18", "volume": 2.20},
+        {"id": "E-287", "date": "2026-06-23", "volume": 2.12},
+        {"id": "E-283", "date": "2026-06-23", "volume": 2.05},
+        {"id": "E-251", "date": "2026-06-23", "volume": 2.20},
+        {"id": "E-221", "date": "2026-06-23", "volume": 2.78},
+        {"id": "E-188", "date": "2026-06-23", "volume": 2.50},
+        {"id": "E-300", "date": "2026-07-02", "volume": 2.00},
+        {"id": "E-282", "date": "2026-07-02", "volume": 2.00},
+        {"id": "E-301", "date": "2026-07-03", "volume": 2.20},
+        {"id": "E-280", "date": "2026-07-03", "volume": 2.20},
+        {"id": "E-262", "date": "2026-07-03", "volume": 2.20},
+        {"id": "E-248", "date": "2026-07-03", "volume": 2.20},
+        {"id": "E-231", "date": "2026-07-03", "volume": 2.20},
+        {"id": "E-263", "date": "2026-07-07", "volume": 2.02},
+        {"id": "E-279", "date": "2026-07-07", "volume": 2.06},
+        {"id": "E-246", "date": "2026-07-07", "volume": 2.08},
+        {"id": "E-230", "date": "2026-07-07", "volume": 2.04},
+        {"id": "E-286", "date": "2026-07-07", "volume": 2.00},
+        {"id": "E-253", "date": "2026-07-07", "volume": 2.06},
+        {"id": "E-220", "date": "2026-07-07", "volume": 2.08},
+        {"id": "E-187", "date": "2026-07-07", "volume": 2.10},
+        {"id": "E-204", "date": "2026-07-07", "volume": 2.04},
+        {"id": "E-284", "date": "2026-07-07", "volume": 2.08},
+        {"id": "E-258", "date": "2026-07-07", "volume": 2.08},
+        {"id": "E-254", "date": "2026-07-07", "volume": 2.10},
+        {"id": "E-224", "date": "2026-07-07", "volume": 2.10},
+        {"id": "E-247", "date": "2026-07-08", "volume": 2.10},
+        {"id": "E-202", "date": "2026-07-08", "volume": 2.17},
+        {"id": "E-285", "date": "2026-07-08", "volume": 2.19},
+        {"id": "E-252", "date": "2026-07-08", "volume": 2.15},
+        {"id": "E-218", "date": "2026-07-08", "volume": 2.08},
+        {"id": "E-185", "date": "2026-07-08", "volume": 2.13},
+        {"id": "E-162", "date": "2026-07-08", "volume": 2.19},
+        {"id": "E-257", "date": "2026-07-08", "volume": 2.08},
+        {"id": "E-255", "date": "2026-07-08", "volume": 2.15},
+        {"id": "E-225", "date": "2026-07-08", "volume": 2.13},
+        {"id": "E-223", "date": "2026-07-08", "volume": 2.10},
+        {"id": "E-193", "date": "2026-07-08", "volume": 2.08},
+        {"id": "E-189", "date": "2026-07-08", "volume": 2.17},
+        {"id": "E-168", "date": "2026-07-08", "volume": 2.10},
+        {"id": "E-163", "date": "2026-07-08", "volume": 2.15},
+        {"id": "E-199", "date": "2026-07-09", "volume": 2.17},
+        {"id": "E-203", "date": "2026-07-09", "volume": 2.20},
+        {"id": "E-250", "date": "2026-07-09", "volume": 2.10},
+        {"id": "E-219", "date": "2026-07-09", "volume": 2.00},
+        {"id": "E-186", "date": "2026-07-09", "volume": 2.15},
+        {"id": "E-161", "date": "2026-07-09", "volume": 2.02},
+        {"id": "E-256", "date": "2026-07-09", "volume": 2.17},
+        {"id": "E-226", "date": "2026-07-09", "volume": 2.06},
+        {"id": "E-222", "date": "2026-07-09", "volume": 2.10},
+        {"id": "E-192", "date": "2026-07-09", "volume": 2.15},
+        {"id": "E-190", "date": "2026-07-09", "volume": 2.04},
+        {"id": "E-200", "date": "2026-07-10", "volume": 2.00},
+        {"id": "E-198", "date": "2026-07-10", "volume": 2.04},
+        {"id": "E-160", "date": "2026-07-10", "volume": 2.24},
+        {"id": "E-290", "date": "2026-07-10", "volume": 2.40},
+        {"id": "E-191", "date": "2026-07-10", "volume": 2.08},
+        {"id": "E-166", "date": "2026-07-10", "volume": 2.13},
+        {"id": "E-165", "date": "2026-07-10", "volume": 2.17},
+        {"id": "E-295", "date": "2026-07-10", "volume": 2.13},
+        {"id": "E-261", "date": "2026-07-10", "volume": 2.21},
+        {"id": "E-294", "date": "2026-07-13", "volume": 2.06},
+        {"id": "E-260", "date": "2026-07-13", "volume": 2.13},
+        {"id": "E-229", "date": "2026-07-13", "volume": 2.08},
+        {"id": "E-196", "date": "2026-07-13", "volume": 2.13},
+        {"id": "E-171", "date": "2026-07-13", "volume": 2.06},
+        {"id": "E-167", "date": "2026-07-13", "volume": 2.10},
+        {"id": "E-118", "date": "2026-07-13", "volume": 2.06},
+        {"id": "E-114", "date": "2026-07-13", "volume": 2.04},
+        {"id": "E-201", "date": "2026-07-14", "volume": 2.06},
+        {"id": "E-197", "date": "2026-07-14", "volume": 2.06},
+        {"id": "E-159", "date": "2026-07-14", "volume": 2.08},
+        {"id": "E-293", "date": "2026-07-14", "volume": 2.02},
+        {"id": "E-259", "date": "2026-07-14", "volume": 2.02},
+        {"id": "E-227", "date": "2026-07-14", "volume": 2.15},
+        {"id": "E-194", "date": "2026-07-14", "volume": 2.04},
+        {"id": "E-169", "date": "2026-07-14", "volume": 2.02},
+        {"id": "E-121", "date": "2026-07-14", "volume": 2.08},
+        {"id": "E-164", "date": "2026-07-14", "volume": 2.06},
+        {"id": "E-117", "date": "2026-07-14", "volume": 2.11},
+        {"id": "E-115", "date": "2026-07-14", "volume": 2.15},
+        {"id": "E-291", "date": "2026-07-15", "volume": 2.21},
+        {"id": "E-289", "date": "2026-07-15", "volume": 2.17},
+        {"id": "E-228", "date": "2026-07-15", "volume": 2.10},
+        {"id": "E-195", "date": "2026-07-15", "volume": 2.08},
+        {"id": "E-170", "date": "2026-07-15", "volume": 2.06},
+        {"id": "E-120", "date": "2026-07-15", "volume": 2.10},
+        {"id": "E-92", "date": "2026-07-15", "volume": 2.08},
+        {"id": "E-116", "date": "2026-07-15", "volume": 2.08},
+        {"id": "E-87", "date": "2026-07-15", "volume": 2.06},
+        {"id": "E-83", "date": "2026-07-15", "volume": 2.02},
+        {"id": "E-113", "date": "2026-07-15", "volume": 2.13},
+        {"id": "E-109", "date": "2026-07-15", "volume": 2.19},
+        {"id": "E-81", "date": "2026-07-15", "volume": 2.13},
+        {"id": "E-77", "date": "2026-07-15", "volume": 2.15},
+        {"id": "E-74", "date": "2026-07-15", "volume": 2.08},
+        {"id": "E-119", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-90", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-52", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-88", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-82", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-110", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-112", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-130", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-128", "date": "2026-07-16", "volume": 0.0},
+        {"id": "E-158", "date": "2026-07-17", "volume": 0.0},
+        {"id": "E-148", "date": "2026-07-17", "volume": 0.0},
+        {"id": "E-154", "date": "2026-07-17", "volume": 0.0},
+        {"id": "E-146", "date": "2026-07-17", "volume": 0.0},
+        {"id": "E-156", "date": "2026-07-17", "volume": 0.0},
+        {"id": "E-145", "date": "2026-07-20", "volume": 2.06},
+        {"id": "E-155", "date": "2026-07-20", "volume": 2.75},
+        {"id": "E-147", "date": "2026-07-20", "volume": 2.08},
+        {"id": "E-157", "date": "2026-07-20", "volume": 2.13},
+        {"id": "E-149", "date": "2026-07-20", "volume": 2.13},
+        {"id": "E-131", "date": "2026-07-20", "volume": 2.45},
+        {"id": "E-89", "date": "2026-07-22", "volume": 2.19},
+        {"id": "E-41", "date": "2026-07-22", "volume": 2.15},
+        {"id": "E-50", "date": "2026-07-22", "volume": 2.13},
+        {"id": "E-86", "date": "2026-07-22", "volume": 2.17},
+        {"id": "E-84", "date": "2026-07-22", "volume": 2.06},
+        {"id": "E-34", "date": "2026-07-22", "volume": 2.15},
+        {"id": "E-36", "date": "2026-07-22", "volume": 2.15},
+        {"id": "E-29", "date": "2026-07-22", "volume": 2.08},
+        {"id": "E-292", "date": "2026-07-23", "volume": 2.00},
+        {"id": "E-288", "date": "2026-07-23", "volume": 2.21},
+        {"id": "E-150", "date": "2026-07-23", "volume": 2.08},
+        {"id": "E-152", "date": "2026-07-23", "volume": 2.26},
+        {"id": "E-129", "date": "2026-07-23", "volume": 2.11},
+        {"id": "E-108", "date": "2026-07-23", "volume": 2.21},
+        {"id": "E-111", "date": "2026-07-23", "volume": 2.17},
+        {"id": "E-79", "date": "2026-07-23", "volume": 2.02},
+        {"id": "E-55", "date": "2026-07-24", "volume": 2.28},
+        {"id": "E-207", "date": "2026-07-24", "volume": 2.15},
+        {"id": "E-174", "date": "2026-07-24", "volume": 2.17},
+        {"id": "E-134", "date": "2026-07-24", "volume": 2.08},
+        {"id": "E-95", "date": "2026-07-24", "volume": 2.08},
+        {"id": "E-99", "date": "2026-07-24", "volume": 1.98},
+        {"id": "E-49", "date": "2026-07-27", "volume": 2.04},
+        {"id": "E-57", "date": "2026-07-27", "volume": 2.06},
+        {"id": "E-205", "date": "2026-07-27", "volume": 2.04},
+        {"id": "E-172", "date": "2026-07-27", "volume": 2.11},
+        {"id": "E-132", "date": "2026-07-27", "volume": 2.06},
+        {"id": "E-93", "date": "2026-07-27", "volume": 2.00},
+        {"id": "E-213", "date": "2026-07-27", "volume": 2.04},
+        {"id": "E-209", "date": "2026-07-27", "volume": 2.08},
+        {"id": "E-180", "date": "2026-07-27", "volume": 2.15},
+        {"id": "E-176", "date": "2026-07-27", "volume": 2.08},
+        {"id": "E-140", "date": "2026-07-27", "volume": 2.04},
+        {"id": "E-136", "date": "2026-07-27", "volume": 2.11},
+        {"id": "E-61", "date": "2026-07-27", "volume": 2.08},
+        {"id": "E-208", "date": "2026-07-28", "volume": 2.06},
+        {"id": "E-175", "date": "2026-07-28", "volume": 1.97},
+        {"id": "E-135", "date": "2026-07-28", "volume": 1.97},
+        {"id": "E-96", "date": "2026-07-28", "volume": 2.15},
+        {"id": "E-212", "date": "2026-07-28", "volume": 2.13},
+        {"id": "E-210", "date": "2026-07-28", "volume": 2.19},
+        {"id": "E-179", "date": "2026-07-28", "volume": 2.15},
+        {"id": "E-177", "date": "2026-07-28", "volume": 2.02},
+        {"id": "E-139", "date": "2026-07-28", "volume": 2.13},
+        {"id": "E-137", "date": "2026-07-28", "volume": 2.11},
+        {"id": "E-100", "date": "2026-07-28", "volume": 2.02},
+        {"id": "E-98", "date": "2026-07-28", "volume": 2.02},
+        {"id": "E-59", "date": "2026-07-28", "volume": 2.15},
+        {"id": "E-54", "date": "2026-07-29", "volume": 2.26},
+        {"id": "E-206", "date": "2026-07-29", "volume": 2.08},
+        {"id": "E-56", "date": "2026-07-29", "volume": 2.11},
+        {"id": "E-173", "date": "2026-07-29", "volume": 2.02},
+        {"id": "E-133", "date": "2026-07-29", "volume": 2.02},
+        {"id": "E-94", "date": "2026-07-29", "volume": 2.02},
+        {"id": "E-153", "date": "2026-07-30", "volume": 2.04},
+        {"id": "E-107", "date": "2026-07-30", "volume": 2.13},
+        {"id": "E-151", "date": "2026-07-30", "volume": 2.02},
+        {"id": "E-75", "date": "2026-07-30", "volume": 2.04},
+        {"id": "E-73", "date": "2026-07-30", "volume": 2.11},
+        {"id": "E-80", "date": "2026-07-30", "volume": 2.24},
+        {"id": "E-42", "date": "2026-07-31", "volume": 2.06},
+        {"id": "E-40", "date": "2026-07-31", "volume": 1.98},
+        {"id": "E-91", "date": "2026-07-31", "volume": 2.08},
+        {"id": "E-85", "date": "2026-07-31", "volume": 2.08},
+        {"id": "E-51", "date": "2026-07-31", "volume": 2.02},
+        {"id": "E-37", "date": "2026-07-31", "volume": 2.08},
+        {"id": "E-33", "date": "2026-07-31", "volume": 2.11},
+        {"id": "E-43", "date": "2026-08-03", "volume": 2.13},
+        {"id": "E-39", "date": "2026-08-03", "volume": 1.98},
+        {"id": "E-38", "date": "2026-08-03", "volume": 2.15},
+        {"id": "E-32", "date": "2026-08-03", "volume": 2.24},
+        {"id": "E-35", "date": "2026-08-04", "volume": 1.95},
+        {"id": "E-31", "date": "2026-08-04", "volume": 2.04},
+        {"id": "E-27", "date": "2026-08-04", "volume": 2.08},
+        {"id": "E-78", "date": "2026-08-04", "volume": 2.15},
+        {"id": "E-76", "date": "2026-08-06", "volume": 2.06},
+        {"id": "E-72", "date": "2026-08-06", "volume": 2.06},
+        {"id": "E-125", "date": "2026-08-06", "volume": 2.04},
+        {"id": "E-71", "date": "2026-08-06", "volume": 2.04},
+        {"id": "E-123", "date": "2026-08-06", "volume": 2.04},
+        {"id": "E-127", "date": "2026-08-06", "volume": 2.04},
+        {"id": "E-48", "date": "2026-08-06", "volume": 2.08},
+        {"id": "E-28", "date": "2026-08-06", "volume": 2.02},
+        {"id": "E-30", "date": "2026-08-06", "volume": 2.13},
+        {"id": "E-22", "date": "2026-08-06", "volume": 2.02},
+        {"id": "E-23", "date": "2026-08-06", "volume": 2.02},
+        {"id": "E-26", "date": "2026-08-06", "volume": 2.04},
+        {"id": "E-122", "date": "2026-08-07", "volume": 2.21},
+        {"id": "E-126", "date": "2026-08-07", "volume": 2.26},
+        {"id": "E-69", "date": "2026-08-07", "volume": 2.06},
+        {"id": "E-49", "date": "2026-08-07", "volume": 2.04},
+        {"id": "E-24", "date": "2026-08-07", "volume": 2.04},
+        {"id": "E-21", "date": "2026-08-10", "volume": 1.95},
+        {"id": "E-25", "date": "2026-08-10", "volume": 2.06},
+        {"id": "E-124", "date": "2026-08-10", "volume": 2.04},
+        {"id": "E-70", "date": "2026-08-10", "volume": 2.11},
+        {"id": "E-47", "date": "2026-08-10", "volume": 2.15}
+    ];
+
+    const mapaExecucao = {};
+    dadosExecucao.forEach(item => {
+        const key = item.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        mapaExecucao[key] = item;
+    });
+
+    state.blocks = estruturaBlocos.map(b => {
+        let piles = b.estacas.map(codEstaca => {
+            const key = codEstaca.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            let exec = mapaExecucao[key];
+
+            let isDone = exec && (exec.volume > 0 || exec.date !== '');
+            return {
+                id: `${b.pilar}-${codEstaca}`,
+                code: codEstaca,
+                status: isDone ? 'concluida' : 'pendente',
+                volume: exec ? exec.volume : 0.85,
+                dateDone: isDone ? exec.date : null
+            };
+        });
+
+        let volBlocoExato = volumesBlocosMap[b.pilar];
+        if (volBlocoExato === undefined) {
+            volBlocoExato = (piles.length * 1.5).toFixed(2);
         }
 
-        function renderCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
+        return {
+            id: b.pilar,
+            name: b.pilar,
+            status: 'pendente',
+            volumeBloco: Number(volBlocoExato).toFixed(2),
+            piles: piles,
+            concreteDate: null,
+            nfNumber: ''
+        };
+    });
 
-            let events = [];
-            let pileEventsByDate = {};
-            let blockEventsByDate = {};
+    verificarLiberacaoBlocos();
+    ordenarBlocos();
+    salvarEstado();
 
-            state.blocks.forEach(b => {
-                if (b.status === 'concretado' && b.concreteDate) {
-                    if (!blockEventsByDate[b.concreteDate]) blockEventsByDate[b.concreteDate] = [];
-                    blockEventsByDate[b.concreteDate].push(b);
-                }
+    let totalEstacas = 0;
+    let concluidas = 0;
+    state.blocks.forEach(b => {
+        b.piles.forEach(p => {
+            totalEstacas++;
+            if (p.status === 'concluida') concluidas++;
+        });
+    });
 
-                b.piles.forEach(p => {
-                    if (p.status === 'concluida' && p.dateDone) {
-                        if (!pileEventsByDate[p.dateDone]) pileEventsByDate[p.dateDone] = 0;
-                        pileEventsByDate[p.dateDone]++;
-                    }
-                });
-            });
-
-            Object.keys(pileEventsByDate).forEach(d => {
-                events.push({
-                    title: `🚜 ${pileEventsByDate[d]} estacas`,
-                    start: d,
-                    backgroundColor: '#0891b2',
-                    borderColor: '#0891b2'
-                });
-            });
-
-            Object.keys(blockEventsByDate).forEach(d => {
-                let blocosList = blockEventsByDate[d];
-                events.push({
-                    title: `🧱 ${blocosList.length} bloco(s) concretados`,
-                    start: d,
-                    backgroundColor: '#16a34a',
-                    borderColor: '#16a34a'
-                });
-            });
-
-            if (!calendarInstance) {
-                calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'pt-br',
-                    events: events,
-                    eventClick: function(info) {
-                        exibirDetalhesDia(info.event.startStr);
-                    },
-                    dateClick: function(info) {
-                        exibirDetalhesDia(info.dateStr);
-                    }
-                });
-                calendarInstance.render();
-            } else {
-                calendarInstance.removeAllEvents();
-                calendarInstance.addEventSource(events);
-                calendarInstance.render();
-            }
-        }
-
-        function exibirDetalhesDia(dateStr) {
-            const detailsEl = document.getElementById('calendar-day-details');
-            let estacasFeitas = [];
-            let blocosConcretados = [];
-
-            state.blocks.forEach(b => {
-                if (b.status === 'concretado' && b.concreteDate === dateStr) {
-                    blocosConcretados.push(b);
-                }
-                b.piles.forEach(p => {
-                    if (p.status === 'concluida' && p.dateDone === dateStr) {
-                        estacasFeitas.push({ blockName: b.name, pileCode: p.code });
-                    }
-                });
-            });
-
-            let html = `<h4>Data: ${dateStr.split('-').reverse().join('/')}</h4><br>`;
-
-            html += `<strong>🚜 Estacas Executadas (${estacasFeitas.length}):</strong><br>`;
-            if (estacasFeitas.length > 0) {
-                html += `<ul style="margin-left:15px; margin-bottom:10px;">`;
-                estacasFeitas.forEach(e => html += `<li>Bloco ${e.blockName} - Estaca ${e.pileCode}</li>`);
-                html += `</ul>`;
-            } else {
-                html += `<p style="color:#94a3b8;">Nenhuma estaca concluída nesta data.</p><br>`;
-            }
-
-            html += `<strong>🧱 Blocos Concretados (${blocosConcretados.length}):</strong><br>`;
-            if (blocosConcretados.length > 0) {
-                let porQtdEstacas = {};
-                blocosConcretados.forEach(b => {
-                    let qtd = b.piles.length;
-                    if (!porQtdEstacas[qtd]) porQtdEstacas[qtd] = [];
-                    porQtdEstacas[qtd].push(b.name);
-                });
-
-                html += `<ul style="margin-left:15px;">`;
-                Object.keys(porQtdEstacas).forEach(q => {
-                    html += `<li><strong>Blocos com ${q} estacas:</strong> ${porQtdEstacas[q].join(', ')}</li>`;
-                });
-                html += `</ul>`;
-            } else {
-                html += `<p style="color:#94a3b8;">Nenhum bloco concretado nesta data.</p>`;
-            }
-
-            detailsEl.innerHTML = html;
-        }
-
-        function adicionarNovoBloco() {
-            const name = document.getElementById('new-block-name').value.trim().toUpperCase();
-            const count = parseInt(document.getElementById('new-block-piles-count').value) || 1;
-            const pileVol = parseFloat(document.getElementById('new-pile-vol').value) || 0;
-            const blockVol = parseFloat(document.getElementById('new-block-vol').value) || 0;
-
-            if (!name) { alert("Informe o nome do bloco."); return; }
-
-            let piles = [];
-            for (let i = 1; i <= count; i++) {
-                piles.push({
-                    id: `${name}-E${i}`,
-                    code: `E${i}`,
-                    status: 'pendente',
-                    volume: pileVol,
-                    dateDone: null
-                });
-            }
-
-            state.blocks.push({
-                id: name,
-                name: name,
-                status: 'pendente',
-                volumeBloco: blockVol.toFixed(2),
-                piles: piles,
-                concreteDate: null,
-                nfNumber: ''
-            });
-
-            salvarEstado();
-            alert(`Bloco ${name} cadastrado com sucesso!`);
-            document.getElementById('new-block-name').value = '';
-        }
-
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`tab-${tab}-btn`).classList.add('active');
-
-            ['estacas', 'blocos', 'calendario', 'volumes', 'cadastros'].forEach(t => {
-                document.getElementById(`tab-${t}`).style.display = (t === tab) ? 'block' : 'none';
-            });
-
-            if (tab === 'volumes') {
-                renderVolumesTab();
-            }
-            if (tab === 'calendario') {
-                setTimeout(() => renderCalendar(), 100);
-            }
-        }
-
-        function importarRastreioCompleto() {
-            const estruturaBlocos = [
-                {"pilar": "ELEVADOR 1", "estacas": ["E-145", "E-146", "E-147", "E-148", "E-149", "E-150", "E-151", "E-152", "E-153", "E-154", "E-155", "E-156", "E-157", "E-158"]},
-                {"pilar": "PE1", "estacas": ["E-107", "E-108"]},
-                {"pilar": "PR1", "estacas": ["E-1", "E-2"]},
-                {"pilar": "P18", "estacas": ["E-119", "E-120", "E-121"]},
-                {"pilar": "P26", "estacas": ["E-169", "E-170", "E-171"]},
-                {"pilar": "P36", "estacas": ["E-194", "E-195", "E-196"]},
-                {"pilar": "P42", "estacas": ["E-227", "E-228", "E-229"]},
-                {"pilar": "P48", "estacas": ["E-259", "E-260", "E-261"]},
-                {"pilar": "P52", "estacas": ["E-293", "E-294", "E-295"]},
-                {"pilar": "P102", "estacas": ["E-69", "E-70", "E-71"]},
-                {"pilar": "P105", "estacas": ["E-202", "E-203", "E-204"]},
-                {"pilar": "PTE1", "estacas": ["E-50", "E-51", "E-52"]},
-                {"pilar": "PTE2", "estacas": ["E-47", "E-48", "E-49"]},
-                {"pilar": "PTE3", "estacas": ["E-230", "E-231", "E-232"]},
-                {"pilar": "PTE4", "estacas": ["E-262", "E-263", "E-264"]},
-                {"pilar": "PTE5", "estacas": ["E-299", "E-300", "E-301"]},
-                {"pilar": "PTE6", "estacas": ["E-296", "E-297", "E-298"]},
-                {"pilar": "PTE7", "estacas": ["E-44", "E-45", "E-46"]},
-                {"pilar": "P12", "estacas": ["E-89", "E-90", "E-91", "E-92"]},
-                {"pilar": "P13", "estacas": ["E-93", "E-94", "E-95", "E-96"]},
-                {"pilar": "P21", "estacas": ["E-132", "E-133", "E-134", "E-135"]},
-                {"pilar": "P23", "estacas": ["E-141", "E-142", "E-143", "E-144"]},
-                {"pilar": "P24", "estacas": ["E-159", "E-160", "E-161", "E-162"]},
-                {"pilar": "P31", "estacas": ["E-172", "E-173", "E-174", "E-175"]},
-                {"pilar": "P33", "estacas": ["E-181", "E-182", "E-183", "E-184"]},
-                {"pilar": "P34", "estacas": ["E-185", "E-186", "E-187", "E-188"]},
-                {"pilar": "P37", "estacas": ["E-205", "E-206", "E-207", "E-208"]},
-                {"pilar": "P39", "estacas": ["E-214", "E-215", "E-216", "E-217"]},
-                {"pilar": "P40", "estacas": ["E-218", "E-219", "E-220", "E-221"]},
-                {"pilar": "P43", "estacas": ["E-233", "E-234", "E-235", "E-236"]},
-                {"pilar": "P45", "estacas": ["E-242", "E-243", "E-244", "E-245"]},
-                {"pilar": "P46", "estacas": ["E-250", "E-251", "E-252", "E-253"]},
-                {"pilar": "P49", "estacas": ["E-265", "E-266", "E-267", "E-268"]},
-                {"pilar": "P106", "estacas": ["E-246", "E-247", "E-248", "E-249"]},
-                {"pilar": "P107", "estacas": ["E-279", "E-280", "E-281", "E-282"]},
-                {"pilar": "P3", "estacas": ["E-16", "E-17", "E-18", "E-19", "E-20"]},
-                {"pilar": "P4", "estacas": ["E-27", "E-28", "E-29", "E-30", "E-31"]},
-                {"pilar": "P6", "estacas": ["E-39", "E-40", "E-41", "E-42", "E-43"]},
-                {"pilar": "P7", "estacas": ["E-53", "E-54", "E-55", "E-56", "E-57"]},
-                {"pilar": "P9", "estacas": ["E-65", "E-66", "E-67", "E-68", "E-69"]},
-                {"pilar": "P10", "estacas": ["E-77", "E-78", "E-79", "E-80", "E-81"]},
-                {"pilar": "P14", "estacas": ["E-97", "E-98", "E-99", "E-100", "E-101"]},
-                {"pilar": "P15", "estacas": ["E-102", "E-103", "E-104", "E-105", "E-106"]},
-                {"pilar": "P16", "estacas": ["E-109", "E-110", "E-111", "E-112", "E-113"]},
-                {"pilar": "P17", "estacas": ["E-114", "E-115", "E-116", "E-117", "E-118"]},
-                {"pilar": "P19", "estacas": ["E-122", "E-123", "E-124", "E-125", "E-126"]},
-                {"pilar": "P20", "estacas": ["E-127", "E-128", "E-129", "E-130", "E-131"]},
-                {"pilar": "P22", "estacas": ["E-136", "E-137", "E-138", "E-139", "E-140"]},
-                {"pilar": "P32", "estacas": ["E-176", "E-177", "E-178", "E-179", "E-180"]},
-                {"pilar": "P35", "estacas": ["E-189", "E-190", "E-191", "E-192", "E-193"]},
-                {"pilar": "P38", "estacas": ["E-209", "E-210", "E-211", "E-212", "E-213"]},
-                {"pilar": "P41", "estacas": ["E-222", "E-223", "E-224", "E-225", "E-226"]},
-                {"pilar": "P44", "estacas": ["E-237", "E-238", "E-239", "E-240", "E-241"]},
-                {"pilar": "P47", "estacas": ["E-254", "E-255", "E-256", "E-257", "E-258"]},
-                {"pilar": "P50", "estacas": ["E-274", "E-275", "E-276", "E-277", "E-278"]},
-                {"pilar": "P51", "estacas": ["E-283", "E-284", "E-285", "E-286", "E-287"]},
-                {"pilar": "P53", "estacas": ["E-269", "E-270", "E-271", "E-272", "E-273"]},
-                {"pilar": "P54", "estacas": ["E-288", "E-289", "E-290", "E-291", "E-292"]},
-                {"pilar": "P103", "estacas": ["E-72", "E-73", "E-74", "E-75", "E-76"]},
-                {"pilar": "P104", "estacas": ["E-197", "E-198", "E-199", "E-200", "E-201"]},
-                {"pilar": "P1", "estacas": ["E-3", "E-4", "E-5", "E-6", "E-7", "E-8"]},
-                {"pilar": "P25", "estacas": ["E-163", "E-164", "E-165", "E-166", "E-167", "E-168"]},
-                {"pilar": "P101", "estacas": ["E-21", "E-22", "E-23", "E-24", "E-25", "E-26"]},
-                {"pilar": "P2", "estacas": ["E-9", "E-10", "E-11", "E-12", "E-13", "E-14", "E-15"]},
-                {"pilar": "P5", "estacas": ["E-32", "E-33", "E-34", "E-35", "E-36", "E-37", "E-38"]},
-                {"pilar": "P8", "estacas": ["E-58", "E-59", "E-60", "E-61", "E-62", "E-63", "E-64"]},
-                {"pilar": "P11", "estacas": ["E-82", "E-83", "E-84", "E-85", "E-86", "E-87", "E-88"]}
-            ];
-
-            const dadosExecucao = [
-                {"id": "E-281", "date": "2026-06-18", "volume": 1.92},
-                {"id": "E-249", "date": "2026-06-18", "volume": 2.12},
-                {"id": "E-299", "date": "2026-06-18", "volume": 2.04},
-                {"id": "E-264", "date": "2026-06-18", "volume": 2.15},
-                {"id": "E-232", "date": "2026-06-18", "volume": 2.20},
-                {"id": "E-287", "date": "2026-06-23", "volume": 2.12},
-                {"id": "E-283", "date": "2026-06-23", "volume": 2.05},
-                {"id": "E-251", "date": "2026-06-23", "volume": 2.20},
-                {"id": "E-221", "date": "2026-06-23", "volume": 2.78},
-                {"id": "E-188", "date": "2026-06-23", "volume": 2.50},
-                {"id": "E-300", "date": "2026-07-02", "volume": 2.00},
-                {"id": "E-282", "date": "2026-07-02", "volume": 2.00},
-                {"id": "E-301", "date": "2026-07-03", "volume": 2.20},
-                {"id": "E-280", "date": "2026-07-03", "volume": 2.20},
-                {"id": "E-262", "date": "2026-07-03", "volume": 2.20},
-                {"id": "E-248", "date": "2026-07-03", "volume": 2.20},
-                {"id": "E-231", "date": "2026-07-03", "volume": 2.20},
-                {"id": "E-263", "date": "2026-07-07", "volume": 2.02},
-                {"id": "E-279", "date": "2026-07-07", "volume": 2.06},
-                {"id": "E-246", "date": "2026-07-07", "volume": 2.08},
-                {"id": "E-230", "date": "2026-07-07", "volume": 2.04},
-                {"id": "E-286", "date": "2026-07-07", "volume": 2.00},
-                {"id": "E-253", "date": "2026-07-07", "volume": 2.06},
-                {"id": "E-220", "date": "2026-07-07", "volume": 2.08},
-                {"id": "E-187", "date": "2026-07-07", "volume": 2.10},
-                {"id": "E-204", "date": "2026-07-07", "volume": 2.04},
-                {"id": "E-284", "date": "2026-07-07", "volume": 2.08},
-                {"id": "E-258", "date": "2026-07-07", "volume": 2.08},
-                {"id": "E-254", "date": "2026-07-07", "volume": 2.10},
-                {"id": "E-224", "date": "2026-07-07", "volume": 2.10},
-                {"id": "E-247", "date": "2026-07-08", "volume": 2.10},
-                {"id": "E-202", "date": "2026-07-08", "volume": 2.17},
-                {"id": "E-285", "date": "2026-07-08", "volume": 2.19},
-                {"id": "E-252", "date": "2026-07-08", "volume": 2.15},
-                {"id": "E-218", "date": "2026-07-08", "volume": 2.08},
-                {"id": "E-185", "date": "2026-07-08", "volume": 2.13},
-                {"id": "E-162", "date": "2026-07-08", "volume": 2.19},
-                {"id": "E-257", "date": "2026-07-08", "volume": 2.08},
-                {"id": "E-255", "date": "2026-07-08", "volume": 2.15},
-                {"id": "E-225", "date": "2026-07-08", "volume": 2.13},
-                {"id": "E-223", "date": "2026-07-08", "volume": 2.10},
-                {"id": "E-193", "date": "2026-07-08", "volume": 2.08},
-                {"id": "E-189", "date": "2026-07-08", "volume": 2.17},
-                {"id": "E-168", "date": "2026-07-08", "volume": 2.10},
-                {"id": "E-163", "date": "2026-07-08", "volume": 2.15},
-                {"id": "E-199", "date": "2026-07-09", "volume": 2.17},
-                {"id": "E-203", "date": "2026-07-09", "volume": 2.20},
-                {"id": "E-250", "date": "2026-07-09", "volume": 2.10},
-                {"id": "E-219", "date": "2026-07-09", "volume": 2.00},
-                {"id": "E-186", "date": "2026-07-09", "volume": 2.15},
-                {"id": "E-161", "date": "2026-07-09", "volume": 2.02},
-                {"id": "E-256", "date": "2026-07-09", "volume": 2.17},
-                {"id": "E-226", "date": "2026-07-09", "volume": 2.06},
-                {"id": "E-222", "date": "2026-07-09", "volume": 2.10},
-                {"id": "E-192", "date": "2026-07-09", "volume": 2.15},
-                {"id": "E-190", "date": "2026-07-09", "volume": 2.04},
-                {"id": "E-200", "date": "2026-07-10", "volume": 2.00},
-                {"id": "E-198", "date": "2026-07-10", "volume": 2.04},
-                {"id": "E-160", "date": "2026-07-10", "volume": 2.24},
-                {"id": "E-290", "date": "2026-07-10", "volume": 2.40},
-                {"id": "E-191", "date": "2026-07-10", "volume": 2.08},
-                {"id": "E-166", "date": "2026-07-10", "volume": 2.13},
-                {"id": "E-165", "date": "2026-07-10", "volume": 2.17},
-                {"id": "E-295", "date": "2026-07-10", "volume": 2.13},
-                {"id": "E-261", "date": "2026-07-10", "volume": 2.21},
-                {"id": "E-294", "date": "2026-07-13", "volume": 2.06},
-                {"id": "E-260", "date": "2026-07-13", "volume": 2.13},
-                {"id": "E-229", "date": "2026-07-13", "volume": 2.08},
-                {"id": "E-196", "date": "2026-07-13", "volume": 2.13},
-                {"id": "E-171", "date": "2026-07-13", "volume": 2.06},
-                {"id": "E-167", "date": "2026-07-13", "volume": 2.10},
-                {"id": "E-118", "date": "2026-07-13", "volume": 2.06},
-                {"id": "E-114", "date": "2026-07-13", "volume": 2.04},
-                {"id": "E-201", "date": "2026-07-14", "volume": 2.06},
-                {"id": "E-197", "date": "2026-07-14", "volume": 2.06},
-                {"id": "E-159", "date": "2026-07-14", "volume": 2.08},
-                {"id": "E-293", "date": "2026-07-14", "volume": 2.02},
-                {"id": "E-259", "date": "2026-07-14", "volume": 2.02},
-                {"id": "E-227", "date": "2026-07-14", "volume": 2.15},
-                {"id": "E-194", "date": "2026-07-14", "volume": 2.04},
-                {"id": "E-169", "date": "2026-07-14", "volume": 2.02},
-                {"id": "E-121", "date": "2026-07-14", "volume": 2.08},
-                {"id": "E-164", "date": "2026-07-14", "volume": 2.06},
-                {"id": "E-117", "date": "2026-07-14", "volume": 2.11},
-                {"id": "E-115", "date": "2026-07-14", "volume": 2.15},
-                {"id": "E-291", "date": "2026-07-15", "volume": 2.21},
-                {"id": "E-289", "date": "2026-07-15", "volume": 2.17},
-                {"id": "E-228", "date": "2026-07-15", "volume": 2.10},
-                {"id": "E-195", "date": "2026-07-15", "volume": 2.08},
-                {"id": "E-170", "date": "2026-07-15", "volume": 2.06},
-                {"id": "E-120", "date": "2026-07-15", "volume": 2.10},
-                {"id": "E-92", "date": "2026-07-15", "volume": 2.08},
-                {"id": "E-116", "date": "2026-07-15", "volume": 2.08},
-                {"id": "E-87", "date": "2026-07-15", "volume": 2.06},
-                {"id": "E-83", "date": "2026-07-15", "volume": 2.02},
-                {"id": "E-113", "date": "2026-07-15", "volume": 2.13},
-                {"id": "E-109", "date": "2026-07-15", "volume": 2.19},
-                {"id": "E-81", "date": "2026-07-15", "volume": 2.13},
-                {"id": "E-77", "date": "2026-07-15", "volume": 2.15},
-                {"id": "E-74", "date": "2026-07-15", "volume": 2.08},
-                {"id": "E-119", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-90", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-52", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-88", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-82", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-110", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-112", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-130", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-128", "date": "2026-07-16", "volume": 0.0},
-                {"id": "E-158", "date": "2026-07-17", "volume": 0.0},
-                {"id": "E-148", "date": "2026-07-17", "volume": 0.0},
-                {"id": "E-154", "date": "2026-07-17", "volume": 0.0},
-                {"id": "E-146", "date": "2026-07-17", "volume": 0.0},
-                {"id": "E-156", "date": "2026-07-17", "volume": 0.0},
-                {"id": "E-145", "date": "2026-07-20", "volume": 2.06},
-                {"id": "E-155", "date": "2026-07-20", "volume": 2.75},
-                {"id": "E-147", "date": "2026-07-20", "volume": 2.08},
-                {"id": "E-157", "date": "2026-07-20", "volume": 2.13},
-                {"id": "E-149", "date": "2026-07-20", "volume": 2.13},
-                {"id": "E-131", "date": "2026-07-20", "volume": 2.45},
-                {"id": "E-89", "date": "2026-07-22", "volume": 2.19},
-                {"id": "E-41", "date": "2026-07-22", "volume": 2.15},
-                {"id": "E-50", "date": "2026-07-22", "volume": 2.13},
-                {"id": "E-86", "date": "2026-07-22", "volume": 2.17},
-                {"id": "E-84", "date": "2026-07-22", "volume": 2.06},
-                {"id": "E-34", "date": "2026-07-22", "volume": 2.15},
-                {"id": "E-36", "date": "2026-07-22", "volume": 2.15},
-                {"id": "E-29", "date": "2026-07-22", "volume": 2.08},
-                {"id": "E-292", "date": "2026-07-23", "volume": 2.00},
-                {"id": "E-288", "date": "2026-07-23", "volume": 2.21},
-                {"id": "E-150", "date": "2026-07-23", "volume": 2.08},
-                {"id": "E-152", "date": "2026-07-23", "volume": 2.26},
-                {"id": "E-129", "date": "2026-07-23", "volume": 2.11},
-                {"id": "E-108", "date": "2026-07-23", "volume": 2.21},
-                {"id": "E-111", "date": "2026-07-23", "volume": 2.17},
-                {"id": "E-79", "date": "2026-07-23", "volume": 2.02},
-                {"id": "E-55", "date": "2026-07-24", "volume": 2.28},
-                {"id": "E-207", "date": "2026-07-24", "volume": 2.15},
-                {"id": "E-174", "date": "2026-07-24", "volume": 2.17},
-                {"id": "E-134", "date": "2026-07-24", "volume": 2.08},
-                {"id": "E-95", "date": "2026-07-24", "volume": 2.08},
-                {"id": "E-99", "date": "2026-07-24", "volume": 1.98},
-                {"id": "E-49", "date": "2026-07-27", "volume": 2.04},
-                {"id": "E-57", "date": "2026-07-27", "volume": 2.06},
-                {"id": "E-205", "date": "2026-07-27", "volume": 2.04},
-                {"id": "E-172", "date": "2026-07-27", "volume": 2.11},
-                {"id": "E-132", "date": "2026-07-27", "volume": 2.06},
-                {"id": "E-93", "date": "2026-07-27", "volume": 2.00},
-                {"id": "E-213", "date": "2026-07-27", "volume": 2.04},
-                {"id": "E-209", "date": "2026-07-27", "volume": 2.08},
-                {"id": "E-180", "date": "2026-07-27", "volume": 2.15},
-                {"id": "E-176", "date": "2026-07-27", "volume": 2.08},
-                {"id": "E-140", "date": "2026-07-27", "volume": 2.04},
-                {"id": "E-136", "date": "2026-07-27", "volume": 2.11},
-                {"id": "E-61", "date": "2026-07-27", "volume": 2.08},
-                {"id": "E-208", "date": "2026-07-28", "volume": 2.06},
-                {"id": "E-175", "date": "2026-07-28", "volume": 1.97},
-                {"id": "E-135", "date": "2026-07-28", "volume": 1.97},
-                {"id": "E-96", "date": "2026-07-28", "volume": 2.15},
-                {"id": "E-212", "date": "2026-07-28", "volume": 2.13},
-                {"id": "E-210", "date": "2026-07-28", "volume": 2.19},
-                {"id": "E-179", "date": "2026-07-28", "volume": 2.15},
-                {"id": "E-177", "date": "2026-07-28", "volume": 2.02},
-                {"id": "E-139", "date": "2026-07-28", "volume": 2.13},
-                {"id": "E-137", "date": "2026-07-28", "volume": 2.11},
-                {"id": "E-100", "date": "2026-07-28", "volume": 2.02},
-                {"id": "E-98", "date": "2026-07-28", "volume": 2.02},
-                {"id": "E-59", "date": "2026-07-28", "volume": 2.15},
-                {"id": "E-54", "date": "2026-07-29", "volume": 2.26},
-                {"id": "E-206", "date": "2026-07-29", "volume": 2.08},
-                {"id": "E-56", "date": "2026-07-29", "volume": 2.11},
-                {"id": "E-173", "date": "2026-07-29", "volume": 2.02},
-                {"id": "E-133", "date": "2026-07-29", "volume": 2.02},
-                {"id": "E-94", "date": "2026-07-29", "volume": 2.02},
-                {"id": "E-153", "date": "2026-07-30", "volume": 2.04},
-                {"id": "E-107", "date": "2026-07-30", "volume": 2.13},
-                {"id": "E-151", "date": "2026-07-30", "volume": 2.02},
-                {"id": "E-75", "date": "2026-07-30", "volume": 2.04},
-                {"id": "E-73", "date": "2026-07-30", "volume": 2.11},
-                {"id": "E-80", "date": "2026-07-30", "volume": 2.24},
-                {"id": "E-42", "date": "2026-07-31", "volume": 2.06},
-                {"id": "E-40", "date": "2026-07-31", "volume": 1.98},
-                {"id": "E-91", "date": "2026-07-31", "volume": 2.08},
-                {"id": "E-85", "date": "2026-07-31", "volume": 2.08},
-                {"id": "E-51", "date": "2026-07-31", "volume": 2.02},
-                {"id": "E-37", "date": "2026-07-31", "volume": 2.08},
-                {"id": "E-33", "date": "2026-07-31", "volume": 2.11},
-                {"id": "E-43", "date": "2026-08-03", "volume": 2.13},
-                {"id": "E-39", "date": "2026-08-03", "volume": 1.98},
-                {"id": "E-38", "date": "2026-08-03", "volume": 2.15},
-                {"id": "E-32", "date": "2026-08-03", "volume": 2.24},
-                {"id": "E-35", "date": "2026-08-04", "volume": 1.95},
-                {"id": "E-31", "date": "2026-08-04", "volume": 2.04},
-                {"id": "E-27", "date": "2026-08-04", "volume": 2.08},
-                {"id": "E-78", "date": "2026-08-04", "volume": 2.15},
-                {"id": "E-76", "date": "2026-08-06", "volume": 2.06},
-                {"id": "E-72", "date": "2026-08-06", "volume": 2.06},
-                {"id": "E-125", "date": "2026-08-06", "volume": 2.04},
-                {"id": "E-71", "date": "2026-08-06", "volume": 2.04},
-                {"id": "E-123", "date": "2026-08-06", "volume": 2.04},
-                {"id": "E-127", "date": "2026-08-06", "volume": 2.04},
-                {"id": "E-48", "date": "2026-08-06", "volume": 2.08},
-                {"id": "E-28", "date": "2026-08-06", "volume": 2.02},
-                {"id": "E-30", "date": "2026-08-06", "volume": 2.13},
-                {"id": "E-22", "date": "2026-08-06", "volume": 2.02},
-                {"id": "E-23", "date": "2026-08-06", "volume": 2.02},
-                {"id": "E-26", "date": "2026-08-06", "volume": 2.04},
-                {"id": "E-122", "date": "2026-08-07", "volume": 2.21},
-                {"id": "E-126", "date": "2026-08-07", "volume": 2.26},
-                {"id": "E-69", "date": "2026-08-07", "volume": 2.06},
-                {"id": "E-49", "date": "2026-08-07", "volume": 2.04},
-                {"id": "E-24", "date": "2026-08-07", "volume": 2.04},
-                {"id": "E-21", "date": "2026-08-10", "volume": 1.95},
-                {"id": "E-25", "date": "2026-08-10", "volume": 2.06},
-                {"id": "E-124", "date": "2026-08-10", "volume": 2.04},
-                {"id": "E-70", "date": "2026-08-10", "volume": 2.11},
-                {"id": "E-47", "date": "2026-08-10", "volume": 2.15}
-            ];
-
-            const mapaExecucao = {};
-            dadosExecucao.forEach(item => {
-                const key = item.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                mapaExecucao[key] = item;
-            });
-
-            state.blocks = estruturaBlocos.map(b => {
-                let piles = b.estacas.map(codEstaca => {
-                    const key = codEstaca.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                    let exec = mapaExecucao[key];
-
-                    let isDone = exec && (exec.volume > 0 || exec.date !== '');
-                    return {
-                        id: `${b.pilar}-${codEstaca}`,
-                        code: codEstaca,
-                        status: isDone ? 'concluida' : 'pendente',
-                        volume: exec ? exec.volume : 0.85,
-                        dateDone: isDone ? exec.date : null
-                    };
-                });
-
-                let volBlocoExato = volumesBlocosMap[b.pilar];
-                if (volBlocoExato === undefined) {
-                    volBlocoExato = (piles.length * 1.5).toFixed(2);
-                }
-
-                return {
-                    id: b.pilar,
-                    name: b.pilar,
-                    status: 'pendente',
-                    volumeBloco: Number(volBlocoExato).toFixed(2),
-                    piles: piles,
-                    concreteDate: null,
-                    nfNumber: ''
-                };
-            });
-
-            verificarLiberacaoBlocos();
-            ordenarBlocos();
-            salvarEstado();
-
-            let totalEstacas = 0;
-            let concluidas = 0;
-            state.blocks.forEach(b => {
-                b.piles.forEach(p => {
-                    totalEstacas++;
-                    if (p.status === 'concluida') concluidas++;
-                });
-            });
-
-            alert(`Estrutura sincronizada com sucesso!\n\n- Blocos ordenados por nome.\n- ${concluidas} de ${totalEstacas} estacas mapeadas.`);
-        }
-    </script>
+    alert(`Estrutura sincronizada com sucesso!\n\n- Blocos ordenados por nome.\n- ${concluidas} de ${totalEstacas} estacas mapeadas.`);
+}
