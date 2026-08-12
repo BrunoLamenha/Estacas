@@ -779,8 +779,14 @@
             }
         }
 function importarRastreioCompleto() {
-    // 1. MAPEAMENTO REAL DOS PILARES E SUAS RESPECTIVAS ESTACAS
+    // 1. MAPEAMENTO DOS PILARES REAIS + BLOCO DO ELEVADOR (E-145 a E-158)
     const estruturaBlocos = [
+        // Bloco do Elevador (dividido conforme sequência de estacas E-145 a E-158)
+        {"pilar": "ELEVADOR-A", "estacas": ["E-145", "E-146", "E-147", "E-148"]},
+        {"pilar": "ELEVADOR-B", "estacas": ["E-149", "E-150", "E-151", "E-152"]},
+        {"pilar": "ELEVADOR-C", "estacas": ["E-153", "E-154", "E-155", "E-156", "E-157", "E-158"]},
+
+        // Demais Blocos / Pilares
         {"pilar": "PE1", "estacas": ["E-107", "E-108"]},
         {"pilar": "PR1", "estacas": ["E-1", "E-2"]},
         {"pilar": "P18", "estacas": ["E-119", "E-120", "E-121"]},
@@ -1077,7 +1083,7 @@ function importarRastreioCompleto() {
         mapaExecucao[key] = item;
     });
 
-    // 3. RECRIAR O ESTADO COM OS BLOCOS/PILARES REAIS E SUAS ESTACAS
+    // 3. RECRIAR O ESTADO COM OS BLOCOS + ELEVADOR
     state.blocks = estruturaBlocos.map(b => {
         let piles = b.estacas.map(codEstaca => {
             const key = codEstaca.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
@@ -1095,7 +1101,7 @@ function importarRastreioCompleto() {
 
         return {
             id: b.pilar,
-            name: `Pilar ${b.pilar}`,
+            name: b.pilar.includes('ELEVADOR') ? `Bloco Elevador (${b.pilar})` : `Pilar ${b.pilar}`,
             status: 'pendente',
             volumeBloco: (piles.length * 1.5).toFixed(2),
             piles: piles,
@@ -1116,7 +1122,7 @@ function importarRastreioCompleto() {
         });
     });
 
-    alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares cadastrados.\n- ${concluidas} de ${totalEstacas} estacas concluídas e atualizadas.`);
+    alert(`Estrutura atualizada com sucesso!\n\n- ${state.blocks.length} Blocos/Pilares (incluindo o Bloco do Elevador).\n- ${concluidas} de ${totalEstacas} estacas sincronizadas.`);
 }
     </script>
 </body>
