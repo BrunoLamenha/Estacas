@@ -1,0 +1,8 @@
+{
+  "name": "Controle de Fundações",
+  "short_name": "Fundações",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#004a8f",
+  "theme_color": "#004a8f"
+}
